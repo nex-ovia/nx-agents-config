@@ -22,27 +22,25 @@ name = "opencode"
 desc = "OpenCode AI coding assistant"
 external = "~/.config/opencode"
 
-  [[tool.internal]]
-  from = "skills"
-  to = "../shared/skills"
-  desc = "Shared skills"
+[[tool.internal]]
+from = "skills"
+to = "../shared/skills"
+desc = "Shared skills"
 
-  # plugins are tool-specific (not shared)
-
-  [[tool.file]]
-  path = "opencode.json"
-  desc = "Global config with model routing"
+[[tool.file]]
+path = "opencode.json"
+desc = "Global config with model routing"
 
 [[tool]]
 name = "claude"
 desc = "Claude Code CLI by Anthropic"
 external = "~/.claude"
 
-  [[tool.internal]]
-  from = "skills"
-  to = "../shared/skills"
-  desc = "Shared skills"
+[[tool.internal]]
+from = "skills"
+to = "../shared/skills"
+desc = "Shared skills"
 
-  [[tool.file]]
-  path = "CLAUDE.md"
-  desc = "Instructions pointing to shared resources"
+[[tool.file]]
+path = "CLAUDE.md"
+desc = "Instructions pointing to shared resources"

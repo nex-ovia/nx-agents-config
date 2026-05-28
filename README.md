@@ -2,6 +2,29 @@
 
 Centralized configuration hub for coding agents (OpenCode, Claude Code, and more).
 
+## One-curl Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/amitsrivastava/nx-agents-config/main/bootstrap.sh | bash
+```
+
+To also run setup immediately:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/amitsrivastava/nx-agents-config/main/bootstrap.sh | bash -s -- --setup
+```
+
+## Prerequisites
+
+- **git**
+- **python3** (≥ 3.11, for TOML parsing)
+- **jq** ([install](https://jqlang.github.io/jq/download/))
+
+```bash
+brew install jq        # macOS
+sudo apt install jq    # Debian/Ubuntu
+```
+
 ## Structure
 
 ```
@@ -13,34 +36,10 @@ nx-agents-config/
 ├── opencode/             OpenCode AI → ~/.config/opencode/
 ├── claude/               Claude Code → ~/.claude/
 ├── nx-agents.toml        Manifest (single source of truth)
-├── setup.sh              Onboarding and management script
+├── setup.sh              CLI tool (tree/setup/update/sync/status)
+├── bootstrap.sh          One-curl install script
 ├── LICENSE               MIT
 └── README.md
-```
-
-## Prerequisites
-
-- **`yq`** — for TOML parsing ([install](https://github.com/mikefarah/yq))
-  ```bash
-  brew install yq        # macOS
-  sudo snap install yq   # Linux
-  ```
-
-## Quick Start
-
-```bash
-# Clone to ~/nx-agents-config
-git clone <your-repo-url> ~/nx-agents-config
-cd ~/nx-agents-config
-
-# Preview what setup will do
-./setup.sh tree
-
-# Run setup (backs up existing configs first)
-./setup.sh setup
-
-# Symlink the CLI into PATH for daily use
-ln -s ~/nx-agents-config/setup.sh ~/.local/bin/nx-agents-config
 ```
 
 ## Commands
@@ -71,10 +70,10 @@ name = "my-agent"
 desc = "My custom coding agent"
 external = "~/.config/my-agent"
 
-  [[tool.internal]]
-  from = "skills"
-  to = "../shared/skills"
-  desc = "Shared skills"
+[[tool.internal]]
+from = "skills"
+to = "../shared/skills"
+desc = "Shared skills"
 ```
 
 Then run `nx-agents-config update`.
@@ -84,18 +83,12 @@ Then run `nx-agents-config update`.
 Add to `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-# Sync nx-agents-config on shell start
 if command -v nx-agents-config &>/dev/null; then
   nx-agents-config sync 2>/dev/null
 fi
 ```
 
-Or schedule via cron/launchd:
-
-```bash
-# ~/Library/LaunchAgents/com.nx-agents-config.sync.plist
-# Runs at 9 AM daily
-```
+Or schedule via cron/launchd.
 
 ## Model Routing
 

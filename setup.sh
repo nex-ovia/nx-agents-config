@@ -207,6 +207,7 @@ cmd_tree() {
   # repo files
   echo "├── nx-agents.toml      $(dim '[manifest]')"
   echo "├── setup.sh            $(dim '[onboarding script]')"
+  echo "├── bootstrap.sh        $(dim '[curl install script]')"
   echo "├── LICENSE             $(dim '[MIT]')"
   echo "└── README.md           $(dim '[documentation]')"
 
@@ -336,7 +337,7 @@ cmd_update() {
   heading "Orphan detection"
   local known=("shared" ".git" ".removed" ".bak")
   while IFS= read -r t; do known+=("$t"); done < <(tool_names)
-  known+=("nx-agents.toml" "setup.sh" "LICENSE" "README.md" ".gitignore")
+  known+=("nx-agents.toml" "setup.sh" "bootstrap.sh" "LICENSE" "README.md" ".gitignore")
 
   for entry in "$REPO_DIR"/*; do
     local base=$(basename "$entry")
