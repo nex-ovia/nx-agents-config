@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_URL="https://github.com/amitsrivastava/nx-agents-config"
+REPO_URL="https://github.com/nex-ovia/nx-agents-config"
 INSTALL_DIR="${HOME}/nx-agents-config"
 CLI_SYMLINK="${HOME}/.local/bin/nx-agents-config"
 

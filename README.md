@@ -5,13 +5,13 @@ Centralized configuration hub for coding agents (OpenCode, Claude Code, and more
 ## One-curl Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/amitsrivastava/nx-agents-config/main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/nex-ovia/nx-agents-config/main/bootstrap.sh | bash
 ```
 
 To also run setup immediately:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/amitsrivastava/nx-agents-config/main/bootstrap.sh | bash -s -- --setup
+curl -fsSL https://raw.githubusercontent.com/nex-ovia/nx-agents-config/main/bootstrap.sh | bash -s -- --setup
 ```
 
 ## Prerequisites
