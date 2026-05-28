@@ -1,5 +1,6 @@
 # Tool-specific auto-generated configs
 claude/projects.json
+claude/projects/
 claude/sessions/
 claude/file-history/
 claude/ide/
@@ -7,6 +8,7 @@ claude/plans/
 claude/telemetry/
 claude/settings.json
 claude/session-env/
+claude/backups/
 
 # Generated symlinks (created by setup/update)
 opencode/skills
