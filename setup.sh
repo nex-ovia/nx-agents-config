@@ -28,6 +28,7 @@ info() { echo -e "  ${ICON_OK} $1"; }
 link() { echo -e "  ${ICON_LINK} $1"; }
 skip() { echo -e "  ${ICON_SKIP} $1"; }
 err()  { echo -e "  ${ICON_ERR} $1"; }
+warn() { echo -e "  ${YELLOW}⚠${NC} $1"; }
 heading() { echo -e "\n${BOLD}$1${NC}"; }
 dim()    { echo -e "${DIM}$1${NC}"; }
 
@@ -153,7 +154,26 @@ tool_internals_display() {
 tool_files_display() {
   tq ".tool[] | select(.name == \"$1\") | .file[] | \"\(.path)  [\(.desc // \"\")]\"" 2>/dev/null
 }
+tool_deps_display() {
+  local deps=$(tq ".tool[] | select(.name == \"$1\") | .dependencies | join(\", \") // empty" 2>/dev/null)
+  [[ -n "$deps" ]] && echo "requires: $deps  [dependencies]" || true
+}
 tool_exists()       { tq ".tool[] | select(.name == \"$1\") | .name // \"\""; }
+tool_dependencies() { tq ".tool[] | select(.name == \"$1\") | .dependencies[] // empty" 2>/dev/null; }
+
+check_deps() {
+  local tool="$1" missing=0
+  while IFS= read -r dep; do
+    [[ -z "$dep" ]] && continue
+    if command -v "$dep" &>/dev/null; then
+      info "Dependency '$dep' found for '$tool'"
+    else
+      warn "Missing dependency '$dep' for '$tool'"
+      missing=1
+    fi
+  done < <(tool_dependencies "$tool")
+  return $missing
+}
 shared_keys()       { tq '.shared | keys | .[] // empty'; }
 shared_path()       { tq ".shared.\"$1\".path // \"\""; }
 shared_desc()       { tq ".shared.\"$1\".desc // \"\""; }
@@ -194,8 +214,10 @@ cmd_tree() {
     while IFS= read -r line; do ints+=("$line"); done < <(tool_internals_display "$t" 2>/dev/null || true)
     local fls=()
     while IFS= read -r line; do fls+=("$line"); done < <(tool_files_display "$t" 2>/dev/null || true)
+    local deps_line=$(tool_deps_display "$t" 2>/dev/null || true)
 
     local sub_items=("${ints[@]}" "${fls[@]}")
+    [[ -n "$deps_line" ]] && sub_items+=("$deps_line")
     local s_last=$((${#sub_items[@]} - 1))
     for si in "${!sub_items[@]}"; do
       local sbranch="├──" sprefix="│"
@@ -248,6 +270,7 @@ cmd_setup() {
     local tool_dir="$REPO_DIR/$t"
 
     heading "Tool: $t ($desc)"
+    check_deps "$t" || true
     ensure_dir "$tool_dir" "$t directory"
 
     # Internal symlinks
@@ -304,6 +327,7 @@ cmd_update() {
     local tool_dir="$REPO_DIR/$t"
 
     heading "Tool: $t ($desc)"
+    check_deps "$t" || true
     ensure_dir "$tool_dir" "$t directory"
 
     # Internal symlinks
@@ -429,12 +453,29 @@ cmd_tool_add() {
     ext_path="~/.config/$name"
   fi
 
+  # Prompt for dependencies
+  echo "  Enter CLI dependencies (comma-separated, e.g. opencode,bun) [leave empty for none]:"
+  read -r deps_input
+  deps_input="${deps_input:-}"
+  deps_toml=""
+  if [[ -n "$deps_input" ]]; then
+    IFS=',' read -ra deps_arr <<< "$deps_input"
+    local dep_list=""
+    for d in "${deps_arr[@]}"; do
+      d="$(echo "$d" | xargs)"  # trim
+      [[ -n "$dep_list" ]] && dep_list="$dep_list, "
+      dep_list="${dep_list}\"$d\""
+    done
+    deps_toml="dependencies = [$dep_list]"
+  fi
+
   # Append to TOML
   local new_entry="
 [[tool]]
 name = \"$name\"
 desc = \"$desc\"
 external = \"$ext_path\"
+${deps_toml:+$deps_toml}
 
   [[tool.internal]]
   from = \"skills\"

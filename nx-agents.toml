@@ -21,6 +21,7 @@ desc = "Cross-session persistent context store"
 name = "opencode"
 desc = "OpenCode AI coding assistant"
 external = "~/.config/opencode"
+dependencies = ["opencode", "bun"]
 
 [[tool.internal]]
 from = "skills"
@@ -35,6 +36,7 @@ desc = "Global config with model routing"
 name = "claude"
 desc = "Claude Code CLI by Anthropic"
 external = "~/.claude"
+dependencies = ["claude"]
 
 [[tool.internal]]
 from = "skills"
