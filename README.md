@@ -40,7 +40,7 @@ cd ~/nx-agents-config
 ./setup.sh setup
 
 # Symlink the CLI into PATH for daily use
-ln -s "$PWD/setup.sh" ~/.local/bin/nx-agents-config
+ln -s ~/nx-agents-config/setup.sh ~/.local/bin/nx-agents-config
 ```
 
 ## Commands
