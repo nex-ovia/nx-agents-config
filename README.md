@@ -69,6 +69,7 @@ Or edit `nx-agents.toml` directly:
 name = "my-agent"
 desc = "My custom coding agent"
 external = "~/.config/my-agent"
+dependencies = ["my-agent-cli", "git"]
 
 [[tool.internal]]
 from = "skills"
@@ -77,6 +78,16 @@ desc = "Shared skills"
 ```
 
 Then run `nx-agents-config update`.
+
+## Dependencies
+
+Each tool can declare CLI dependencies. `setup` and `update` check if they're on PATH and warn if missing:
+
+```toml
+dependencies = ["opencode", "bun"]
+```
+
+Shared resources have no dependencies — they are passive data (skills, rules, memory).
 
 ## Daily Sync
 
