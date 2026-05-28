@@ -1,0 +1,51 @@
+[config]
+name = "nx-agents-config"
+repo = "~/nx-agents-config"
+home = "~/.nx-agents-config"
+license = "MIT"
+version = "1.0.0"
+
+[shared.skills]
+path = "shared/skills"
+desc = "Agent skill definitions (<name>/SKILL.md)"
+
+[shared.rules]
+path = "shared/rules"
+desc = "Reusable instruction/rule files (*.md)"
+
+[shared.memory]
+path = "shared/memory"
+desc = "Cross-session persistent context store"
+
+[[tool]]
+name = "opencode"
+desc = "OpenCode AI coding assistant"
+external = "~/.config/opencode"
+
+  [[tool.internal]]
+  from = "skills"
+  to = "../shared/skills"
+  desc = "Shared skills"
+
+  [[tool.internal]]
+  from = "plugins"
+  to = "../shared/plugins"
+  desc = "Shared plugins"
+
+  [[tool.file]]
+  path = "opencode.json"
+  desc = "Global config with model routing"
+
+[[tool]]
+name = "claude"
+desc = "Claude Code CLI by Anthropic"
+external = "~/.claude"
+
+  [[tool.internal]]
+  from = "skills"
+  to = "../shared/skills"
+  desc = "Shared skills"
+
+  [[tool.file]]
+  path = "CLAUDE.md"
+  desc = "Instructions pointing to shared resources"

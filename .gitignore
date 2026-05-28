@@ -1,0 +1,26 @@
+# Tool-specific auto-generated configs
+claude/projects.json
+claude/sessions/
+claude/file-history/
+claude/ide/
+claude/plans/
+claude/telemetry/
+claude/settings.json
+claude/session-env/
+
+# Runtime data
+shared/memory/*
+!shared/memory/.gitkeep
+
+# Build artifacts
+opencode/**/node_modules/
+
+# OS files
+.DS_Store
+*.log
+*.swp
+*.swo
+
+# Empty dir placeholders (we use .gitkeep convention)
+# But keep the .gitkeep files themselves
+!.gitkeep
