@@ -27,10 +27,7 @@ external = "~/.config/opencode"
   to = "../shared/skills"
   desc = "Shared skills"
 
-  [[tool.internal]]
-  from = "plugins"
-  to = "../shared/plugins"
-  desc = "Shared plugins"
+  # plugins are tool-specific (not shared)
 
   [[tool.file]]
   path = "opencode.json"

@@ -8,6 +8,11 @@ claude/telemetry/
 claude/settings.json
 claude/session-env/
 
+# Generated symlinks (created by setup/update)
+opencode/skills
+opencode/plugins
+claude/skills
+
 # Runtime data
 shared/memory/*
 !shared/memory/.gitkeep
