@@ -37,7 +37,7 @@ source "$NX_AGENTS_HOME/src/commands/sync.sh"
 source "$NX_AGENTS_HOME/src/commands/project.sh"
 source "$NX_AGENTS_HOME/src/commands/tool.sh"
 source "$NX_AGENTS_HOME/src/commands/update-tool.sh"
-source "$NX_AGENTS_HOME/src/commands/claude.sh"
+source "$NX_AGENTS_HOME/src/commands/restoreFromBkp.sh"
 source "$NX_AGENTS_HOME/src/commands/uninstall.sh"
 
 # ---------------------------------------------------------------------------
@@ -57,7 +57,7 @@ ${BOLD}Commands:${NC}
   project add <name>    Add a new project
   project list          List projects
   tool add <name>       Scaffold a new tool in store/config.toml
-  claude restore        Restore Claude data from backup into store/
+  restoreFromBkp        Restore Claude data from backup into store/
   update-tool           Update nx-agents-config tool (download template)
   uninstall             Backup store + remove everything
 
@@ -95,9 +95,9 @@ case "${1:-help}" in
   sync) shift; cmd_sync "$@" ;;
   update-tool) shift; cmd_update_tool "$@" ;;
   uninstall) shift; cmd_uninstall "$@" ;;
-  claude)
+  restoreFromBkp)
     shift
-    cmd_claude "$@"
+    cmd_restoreFromBkp "$@"
     ;;
   project)
     shift

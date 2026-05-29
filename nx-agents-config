@@ -926,31 +926,9 @@ cmd_tool() {
   esac
 }
 
-# claude.sh — Claude-specific operations
+# restoreFromBkp.sh — Restore Claude data from backup into store/
 
-cmd_claude() {
-  local subcmd="${1:-help}"
-  shift 2>/dev/null || true
-
-  case "$subcmd" in
-    restore) cmd_claude_restore "$@" ;;
-    help|--help|-h|"")
-      cat <<EOF
-Usage: nx-agents-config claude <command>
-
-Commands:
-  restore          Restore Claude data from backup into store/
-EOF
-      ;;
-    *)
-      err "Unknown claude command: $subcmd"
-      echo "Usage: nx-agents-config claude help"
-      exit 1
-      ;;
-  esac
-}
-
-cmd_claude_restore() {
+cmd_restoreFromBkp() {
   local backup_dir=""
   for d in "$HOME"/.claude.bak.*/; do
     [[ -d "$d" ]] && backup_dir="$d"
@@ -967,7 +945,6 @@ cmd_claude_restore() {
 
   local cs="$STORE_DIR/claude"
 
-  # Restore subdirectory from backup into store
   restore_dir() {
     local rel="$1" label="$2"
     local src="$backup_dir/$rel"
@@ -1012,7 +989,6 @@ cmd_claude_restore() {
   restore_file_if "settings.json" "Settings"
   restore_file_if "CLAUDE.md" "CLAUDE.md"
 
-  # Handle ~/.claude.json
   heading "Claude config (.claude.json)"
   local json_src="$HOME/.claude.json"
   local json_dst="$cs/.claude.json"
@@ -1043,7 +1019,6 @@ cmd_claude_restore() {
     fi
   fi
 
-  # Offer to commit
   if [[ -d "$STORE_DIR/.git" ]]; then
     echo ""
     echo -n "  Commit restored data to store? [y/N] "
@@ -1215,7 +1190,7 @@ ${BOLD}Commands:${NC}
   project add <name>    Add a new project
   project list          List projects
   tool add <name>       Scaffold a new tool in store/config.toml
-  claude restore        Restore Claude data from backup into store/
+  restoreFromBkp        Restore Claude data from backup into store/
   update-tool           Update nx-agents-config tool (download template)
   uninstall             Backup store + remove everything
 
@@ -1253,9 +1228,9 @@ case "${1:-help}" in
   sync) shift; cmd_sync "$@" ;;
   update-tool) shift; cmd_update_tool "$@" ;;
   uninstall) shift; cmd_uninstall "$@" ;;
-  claude)
+  restoreFromBkp)
     shift
-    cmd_claude "$@"
+    cmd_restoreFromBkp "$@"
     ;;
   project)
     shift

@@ -1,28 +1,6 @@
-# claude.sh — Claude-specific operations
+# restoreFromBkp.sh — Restore Claude data from backup into store/
 
-cmd_claude() {
-  local subcmd="${1:-help}"
-  shift 2>/dev/null || true
-
-  case "$subcmd" in
-    restore) cmd_claude_restore "$@" ;;
-    help|--help|-h|"")
-      cat <<EOF
-Usage: nx-agents-config claude <command>
-
-Commands:
-  restore          Restore Claude data from backup into store/
-EOF
-      ;;
-    *)
-      err "Unknown claude command: $subcmd"
-      echo "Usage: nx-agents-config claude help"
-      exit 1
-      ;;
-  esac
-}
-
-cmd_claude_restore() {
+cmd_restoreFromBkp() {
   local backup_dir=""
   for d in "$HOME"/.claude.bak.*/; do
     [[ -d "$d" ]] && backup_dir="$d"
@@ -39,7 +17,6 @@ cmd_claude_restore() {
 
   local cs="$STORE_DIR/claude"
 
-  # Restore subdirectory from backup into store
   restore_dir() {
     local rel="$1" label="$2"
     local src="$backup_dir/$rel"
@@ -84,7 +61,6 @@ cmd_claude_restore() {
   restore_file_if "settings.json" "Settings"
   restore_file_if "CLAUDE.md" "CLAUDE.md"
 
-  # Handle ~/.claude.json
   heading "Claude config (.claude.json)"
   local json_src="$HOME/.claude.json"
   local json_dst="$cs/.claude.json"
@@ -115,7 +91,6 @@ cmd_claude_restore() {
     fi
   fi
 
-  # Offer to commit
   if [[ -d "$STORE_DIR/.git" ]]; then
     echo ""
     echo -n "  Commit restored data to store? [y/N] "

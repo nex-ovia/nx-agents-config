@@ -33,21 +33,30 @@ sudo apt install jq    # Debian/Ubuntu
 ├── store/                Your data (separate git repo)
 │   ├── config.toml       User overrides
 │   ├── opencode/         OpenCode config (→ ~/.config/opencode/)
-│   └── claude/           Claude config (→ ~/.claude/)
-└── shared/
-    ├── skills/           Agent skill definitions (<name>/SKILL.md)
-    ├── rules/            Reusable instruction/rule files
-    └── memory/           Cross-session persistent context store
+│   ├── claude/           Claude config (→ ~/.claude/, ~/.claude.json)
+│   │   ├── .claude.json        Claude global config (tracked)
+│   │   ├── projects/           Per-project sessions
+│   │   ├── sessions/           Session data
+│   │   ├── plans/              Architecture plans
+│   │   ├── file-history/       Undo/redo history
+│   │   └── ...                 Other Claude runtime data
+│   └── shared/
+│       ├── projects/           Cross-agent project copies
+│       ├── skills/             Agent skill definitions (shared via symlink)
+│       ├── rules/              Reusable instruction/rule files
+│       └── memory/             Cross-session persistent context store
+└── shared/ → store/shared/
 ```
 
 ## Commands
 
 | Command | Description |
-|---|---|
+|---|---|---|
 | `nx-agents-config tree` | Show full directory tree from config |
 | `nx-agents-config setup` | Initial setup: create store/, shared/, symlinks |
 | `nx-agents-config update` | Reconcile filesystem to match config (orphans → `.removed/`) |
 | `nx-agents-config sync` | Git sync your store/ data |
+| `nx-agents-config restoreFromBkp` | Restore Claude data from `~/.claude.bak.*/` into store/ |
 | `nx-agents-config project add <name>` | Create a new project in store/ |
 | `nx-agents-config project list` | List projects |
 | `nx-agents-config tool add <name>` | Scaffold a new tool in store/config.toml |
