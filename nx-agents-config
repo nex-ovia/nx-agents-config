@@ -800,7 +800,7 @@ cmd_sync() {
 
     # Push if remote configured
     if [[ -n "$remote" ]]; then
-      if run git push 2>/dev/null; then
+      if run git push -u origin HEAD; then
         info "Pushed to remote"
       else
         warn "Push failed — check remote connectivity"
