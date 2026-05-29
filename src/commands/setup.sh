@@ -124,6 +124,7 @@ EOF
     dim "  export PATH=\"\$HOME/.local/bin:\$PATH\""
   fi
 
+  dim "  Star us: https://github.com/nex-ovia/nx-agents-config"
   echo ""
   info "Setup complete! Run '${BOLD}nx-agents-config tree${NC}' to verify."
 }
