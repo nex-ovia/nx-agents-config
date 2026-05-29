@@ -108,6 +108,7 @@ ensure_external_file_symlink() {
 ensure_external_dir_symlink() {
   local store_subdir="$1" ext_path="$2" desc="$3"
   shift 3
+  local expanded_ext="${ext_path/#\~/$HOME}"
 
   ensure_dir "$store_subdir" "$desc (store)"
 
@@ -115,6 +116,30 @@ ensure_external_dir_symlink() {
     local gi_file="$store_subdir/.gitignore"
     if [[ ! -f "$gi_file" ]]; then
       printf '%s\n' "$@" > "$gi_file"
+    fi
+  fi
+
+  # Migrate existing top-level files (not dirs) into the store before symlinking
+  # so that data is not lost when the real dir is replaced with a symlink.
+  if [[ -d "$expanded_ext" && ! -L "$expanded_ext" ]]; then
+    if ${DRY_RUN:-false}; then
+      skip "(would migrate files from) $expanded_ext → $store_subdir"
+    else
+      local migrated=0
+      for item in "$expanded_ext"/*; do
+        [[ -f "$item" ]] || continue
+        local base; base=$(basename "$item")
+        local skip_file=false
+        local pattern
+        for pattern in "$@"; do
+          case "$base" in ${pattern%/}) skip_file=true; break ;; esac
+        done
+        if ! $skip_file && [[ ! -f "$store_subdir/$base" ]]; then
+          cp "$item" "$store_subdir/$base" 2>/dev/null || true
+          migrated=$((migrated + 1))
+        fi
+      done
+      [[ $migrated -gt 0 ]] && info "Migrated $migrated file(s) to store: $desc"
     fi
   fi
 

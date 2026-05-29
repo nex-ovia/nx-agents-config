@@ -7,7 +7,7 @@ set -euo pipefail
 NX_AGENTS_HOME="${HOME}/.nx-agents-config"
 
 # Embedded default TOML (base64 encoded)
-DEFAULT_TOML_B64='W2NvbmZpZ10KbmFtZSA9ICJueC1hZ2VudHMtY29uZmlnIgpyZXBvID0gIn4vLm54LWFnZW50cy1jb25maWciCmhvbWUgPSAifi8ubngtYWdlbnRzLWNvbmZpZyIKc3RvcmUgPSAic3RvcmUiCmxpY2Vuc2UgPSAiTUlUIgp2ZXJzaW9uID0gIjEuMC4wIgoKW3NoYXJlZC5za2lsbHNdCnBhdGggPSAic2hhcmVkL3NraWxscyIKZGVzYyA9ICJBZ2VudCBza2lsbCBkZWZpbml0aW9ucyAoPG5hbWU+L1NLSUxMLm1kKSIKCltzaGFyZWQucnVsZXNdCnBhdGggPSAic2hhcmVkL3J1bGVzIgpkZXNjID0gIlJldXNhYmxlIGluc3RydWN0aW9uL3J1bGUgZmlsZXMgKCoubWQpIgoKW3NoYXJlZC5tZW1vcnldCnBhdGggPSAic2hhcmVkL21lbW9yeSIKZGVzYyA9ICJDcm9zcy1zZXNzaW9uIHBlcnNpc3RlbnQgY29udGV4dCBzdG9yZSIKCltzaGFyZWQucHJvamVjdHNdCnBhdGggPSAic2hhcmVkL3Byb2plY3RzIgpkZXNjID0gIkNyb3NzLWFnZW50IHByb2plY3QgY29udGV4dCBkaXJlY3RvcmllcyIKCltbdG9vbF1dCm5hbWUgPSAib3BlbmNvZGUiCmRlc2MgPSAiT3BlbkNvZGUgQUkgY29kaW5nIGFzc2lzdGFudCIKZXh0ZXJuYWwgPSAifi8uY29uZmlnL29wZW5jb2RlIgpkYXRhID0gIn4vLmxvY2FsL3NoYXJlL29wZW5jb2RlIgpkZXBlbmRlbmNpZXMgPSBbIm9wZW5jb2RlIiwgImJ1biJdCgpbW3Rvb2wuZXh0ZXJuYWxfZGlyXV0KcGF0aCA9ICJ+Ly5sb2NhbC9zaGFyZS9vcGVuY29kZSIKc3RvcmVfcGF0aCA9ICJ1c2VyZGF0YSIKZGVzYyA9ICJPcGVuQ29kZSBzZXNzaW9ucyBkYXRhYmFzZSIKZ2l0aWdub3JlID0gWyIqLmRiLXNobSIsICIqLmRiLXdhbCIsICJsb2cvIiwgInJlcG9zLyJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmludGVybmFsXV0KZnJvbSA9ICJzaGFyZWQtcHJvamVjdHMiCnRvID0gIi4uL3NoYXJlZC9wcm9qZWN0cyIKZGVzYyA9ICJTaGFyZWQgcHJvamVjdCBjb250ZXh0IgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIm9wZW5jb2RlLmpzb24iCmRlc2MgPSAiR2xvYmFsIGNvbmZpZyB3aXRoIG1vZGVsIHJvdXRpbmciCgpbW3Rvb2xdXQpuYW1lID0gImNsYXVkZSIKZGVzYyA9ICJDbGF1ZGUgQ29kZSBDTEkgYnkgQW50aHJvcGljIgpleHRlcm5hbCA9ICJ+Ly5jbGF1ZGUiCmRhdGEgPSAifi8uY2xhdWRlIgpkZXBlbmRlbmNpZXMgPSBbImNsYXVkZSJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmludGVybmFsXV0KZnJvbSA9ICJzaGFyZWQtcHJvamVjdHMiCnRvID0gIi4uL3NoYXJlZC9wcm9qZWN0cyIKZGVzYyA9ICJTaGFyZWQgcHJvamVjdCBjb250ZXh0IgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIkNMQVVERS5tZCIKZGVzYyA9ICJJbnN0cnVjdGlvbnMgcG9pbnRpbmcgdG8gc2hhcmVkIHJlc291cmNlcyIKCltbdG9vbC5leHRlcm5hbF9maWxlXV0KcGF0aCA9ICJ+Ly5jbGF1ZGUuanNvbiIKZGVzYyA9ICJDbGF1ZGUgZ2xvYmFsIGNvbmZpZyBmaWxlIgo='
+DEFAULT_TOML_B64='W2NvbmZpZ10KbmFtZSA9ICJueC1hZ2VudHMtY29uZmlnIgpyZXBvID0gIn4vLm54LWFnZW50cy1jb25maWciCmhvbWUgPSAifi8ubngtYWdlbnRzLWNvbmZpZyIKc3RvcmUgPSAic3RvcmUiCmxpY2Vuc2UgPSAiTUlUIgp2ZXJzaW9uID0gIjEuMC4wIgoKW3NoYXJlZC5za2lsbHNdCnBhdGggPSAic2hhcmVkL3NraWxscyIKZGVzYyA9ICJBZ2VudCBza2lsbCBkZWZpbml0aW9ucyAoPG5hbWU+L1NLSUxMLm1kKSIKCltzaGFyZWQucnVsZXNdCnBhdGggPSAic2hhcmVkL3J1bGVzIgpkZXNjID0gIlJldXNhYmxlIGluc3RydWN0aW9uL3J1bGUgZmlsZXMgKCoubWQpIgoKW3NoYXJlZC5tZW1vcnldCnBhdGggPSAic2hhcmVkL21lbW9yeSIKZGVzYyA9ICJDcm9zcy1zZXNzaW9uIHBlcnNpc3RlbnQgY29udGV4dCBzdG9yZSIKCltzaGFyZWQucHJvamVjdHNdCnBhdGggPSAic2hhcmVkL3Byb2plY3RzIgpkZXNjID0gIkNyb3NzLWFnZW50IHByb2plY3QgY29udGV4dCBkaXJlY3RvcmllcyIKCltbdG9vbF1dCm5hbWUgPSAib3BlbmNvZGUiCmRlc2MgPSAiT3BlbkNvZGUgQUkgY29kaW5nIGFzc2lzdGFudCIKZXh0ZXJuYWwgPSAifi8uY29uZmlnL29wZW5jb2RlIgpkYXRhID0gIn4vLmxvY2FsL3NoYXJlL29wZW5jb2RlIgpkZXBlbmRlbmNpZXMgPSBbIm9wZW5jb2RlIiwgImJ1biJdCgpbW3Rvb2wuZXh0ZXJuYWxfZGlyXV0KcGF0aCA9ICJ+Ly5sb2NhbC9zaGFyZS9vcGVuY29kZSIKc3RvcmVfcGF0aCA9ICJ1c2VyZGF0YSIKZGVzYyA9ICJPcGVuQ29kZSBzZXNzaW9ucyBkYXRhYmFzZSIKZ2l0aWdub3JlID0gWyIqLmRiLXNobSIsICIqLmRiLXdhbCIsICJsb2cvIiwgInJlcG9zLyIsICJiaW4vIiwgInN0b3JhZ2UvIiwgInRvb2wtb3V0cHV0LyJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmludGVybmFsXV0KZnJvbSA9ICJzaGFyZWQtcHJvamVjdHMiCnRvID0gIi4uL3NoYXJlZC9wcm9qZWN0cyIKZGVzYyA9ICJTaGFyZWQgcHJvamVjdCBjb250ZXh0IgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIm9wZW5jb2RlLmpzb24iCmRlc2MgPSAiR2xvYmFsIGNvbmZpZyB3aXRoIG1vZGVsIHJvdXRpbmciCgpbW3Rvb2xdXQpuYW1lID0gImNsYXVkZSIKZGVzYyA9ICJDbGF1ZGUgQ29kZSBDTEkgYnkgQW50aHJvcGljIgpleHRlcm5hbCA9ICJ+Ly5jbGF1ZGUiCmRhdGEgPSAifi8uY2xhdWRlIgpkZXBlbmRlbmNpZXMgPSBbImNsYXVkZSJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmludGVybmFsXV0KZnJvbSA9ICJzaGFyZWQtcHJvamVjdHMiCnRvID0gIi4uL3NoYXJlZC9wcm9qZWN0cyIKZGVzYyA9ICJTaGFyZWQgcHJvamVjdCBjb250ZXh0IgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIkNMQVVERS5tZCIKZGVzYyA9ICJJbnN0cnVjdGlvbnMgcG9pbnRpbmcgdG8gc2hhcmVkIHJlc291cmNlcyIKCltbdG9vbC5leHRlcm5hbF9maWxlXV0KcGF0aCA9ICJ+Ly5jbGF1ZGUuanNvbiIKZGVzYyA9ICJDbGF1ZGUgZ2xvYmFsIGNvbmZpZyBmaWxlIgo='
 
 # Decode embedded default TOML
 DEFAULT_TOML=$(python3 -c "import base64,sys; sys.stdout.write(base64.b64decode(sys.argv[1]).decode())" "$DEFAULT_TOML_B64" 2>/dev/null || printf "")
@@ -310,6 +310,7 @@ ensure_external_file_symlink() {
 ensure_external_dir_symlink() {
   local store_subdir="$1" ext_path="$2" desc="$3"
   shift 3
+  local expanded_ext="${ext_path/#\~/$HOME}"
 
   ensure_dir "$store_subdir" "$desc (store)"
 
@@ -317,6 +318,30 @@ ensure_external_dir_symlink() {
     local gi_file="$store_subdir/.gitignore"
     if [[ ! -f "$gi_file" ]]; then
       printf '%s\n' "$@" > "$gi_file"
+    fi
+  fi
+
+  # Migrate existing top-level files (not dirs) into the store before symlinking
+  # so that data is not lost when the real dir is replaced with a symlink.
+  if [[ -d "$expanded_ext" && ! -L "$expanded_ext" ]]; then
+    if ${DRY_RUN:-false}; then
+      skip "(would migrate files from) $expanded_ext → $store_subdir"
+    else
+      local migrated=0
+      for item in "$expanded_ext"/*; do
+        [[ -f "$item" ]] || continue
+        local base; base=$(basename "$item")
+        local skip_file=false
+        local pattern
+        for pattern in "$@"; do
+          case "$base" in ${pattern%/}) skip_file=true; break ;; esac
+        done
+        if ! $skip_file && [[ ! -f "$store_subdir/$base" ]]; then
+          cp "$item" "$store_subdir/$base" 2>/dev/null || true
+          migrated=$((migrated + 1))
+        fi
+      done
+      [[ $migrated -gt 0 ]] && info "Migrated $migrated file(s) to store: $desc"
     fi
   fi
 

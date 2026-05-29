@@ -33,7 +33,7 @@ dependencies = ["opencode", "bun"]
 path = "~/.local/share/opencode"
 store_path = "userdata"
 desc = "OpenCode sessions database"
-gitignore = ["*.db-shm", "*.db-wal", "log/", "repos/"]
+gitignore = ["*.db-shm", "*.db-wal", "log/", "repos/", "bin/", "storage/", "tool-output/"]
 
 [[tool.internal]]
 from = "skills"
