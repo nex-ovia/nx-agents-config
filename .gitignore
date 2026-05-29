@@ -1,6 +1,3 @@
-# Built binary (produced by build.sh)
-/nx-agents-config
-
 # User data store (separate git repo, user controls their remote)
 /store/
 

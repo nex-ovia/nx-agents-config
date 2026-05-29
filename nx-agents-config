@@ -1,0 +1,1050 @@
+#!/usr/bin/env bash
+# nx-agents-config — Self-contained binary
+# https://github.com/nex-ovia/nx-agents-config
+set -euo pipefail
+
+# Directory where store/ and shared/ live
+NX_AGENTS_HOME="${HOME}/.nx-agents-config"
+
+# Embedded default TOML (base64 encoded)
+DEFAULT_TOML_B64='W2NvbmZpZ10KbmFtZSA9ICJueC1hZ2VudHMtY29uZmlnIgpyZXBvID0gIn4vLm54LWFnZW50cy1jb25maWciCmhvbWUgPSAifi8ubngtYWdlbnRzLWNvbmZpZyIKc3RvcmUgPSAic3RvcmUiCmxpY2Vuc2UgPSAiTUlUIgp2ZXJzaW9uID0gIjEuMC4wIgoKW3NoYXJlZC5za2lsbHNdCnBhdGggPSAic2hhcmVkL3NraWxscyIKZGVzYyA9ICJBZ2VudCBza2lsbCBkZWZpbml0aW9ucyAoPG5hbWU+L1NLSUxMLm1kKSIKCltzaGFyZWQucnVsZXNdCnBhdGggPSAic2hhcmVkL3J1bGVzIgpkZXNjID0gIlJldXNhYmxlIGluc3RydWN0aW9uL3J1bGUgZmlsZXMgKCoubWQpIgoKW3NoYXJlZC5tZW1vcnldCnBhdGggPSAic2hhcmVkL21lbW9yeSIKZGVzYyA9ICJDcm9zcy1zZXNzaW9uIHBlcnNpc3RlbnQgY29udGV4dCBzdG9yZSIKCltbdG9vbF1dCm5hbWUgPSAib3BlbmNvZGUiCmRlc2MgPSAiT3BlbkNvZGUgQUkgY29kaW5nIGFzc2lzdGFudCIKZXh0ZXJuYWwgPSAifi8uY29uZmlnL29wZW5jb2RlIgpkZXBlbmRlbmNpZXMgPSBbIm9wZW5jb2RlIiwgImJ1biJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIm9wZW5jb2RlLmpzb24iCmRlc2MgPSAiR2xvYmFsIGNvbmZpZyB3aXRoIG1vZGVsIHJvdXRpbmciCgpbW3Rvb2xdXQpuYW1lID0gImNsYXVkZSIKZGVzYyA9ICJDbGF1ZGUgQ29kZSBDTEkgYnkgQW50aHJvcGljIgpleHRlcm5hbCA9ICJ+Ly5jbGF1ZGUiCmRlcGVuZGVuY2llcyA9IFsiY2xhdWRlIl0KCltbdG9vbC5pbnRlcm5hbF1dCmZyb20gPSAic2tpbGxzIgp0byA9ICIuLi9zaGFyZWQvc2tpbGxzIgpkZXNjID0gIlNoYXJlZCBza2lsbHMiCgpbW3Rvb2wuZmlsZV1dCnBhdGggPSAiQ0xBVURFLm1kIgpkZXNjID0gIkluc3RydWN0aW9ucyBwb2ludGluZyB0byBzaGFyZWQgcmVzb3VyY2VzIgo='
+
+# Decode embedded default TOML
+DEFAULT_TOML=$(python3 -c "import base64,sys; sys.stdout.write(base64.b64decode(sys.argv[1]).decode())" "$DEFAULT_TOML_B64" 2>/dev/null || printf "")
+
+# colors.sh — Portable color system (tput + printf)
+# Works on macOS, Linux, TTY, and piped output.
+
+if [[ -t 1 ]]; then
+  if command -v tput &>/dev/null; then
+    GREEN=$(tput setaf 2)
+    CYAN=$(tput setaf 6)
+    YELLOW=$(tput setaf 3)
+    RED=$(tput setaf 1)
+    BOLD=$(tput bold)
+    DIM=$(tput dim 2>/dev/null || tput setaf 8 2>/dev/null || printf '')
+    NC=$(tput sgr0)
+  else
+    GREEN='\033[0;32m'; CYAN='\033[0;36m'
+    YELLOW='\033[1;33m'; RED='\033[0;31m'
+    BOLD='\033[1m'; DIM='\033[2m'; NC='\033[0m'
+  fi
+
+  if [[ "$TERM" == *"linux"* || "$LANG" == *"C"* || "$LANG" == *"POSIX"* ]]; then
+    ICON_OK="${GREEN}[ok]${NC}";   ICON_WARN="${YELLOW}[!]${NC}"
+    ICON_ERR="${RED}[err]${NC}";   ICON_SKIP="${YELLOW}[-]${NC}"; ICON_LINK="${CYAN}->${NC}"
+  else
+    ICON_OK="${GREEN}${NC}"; ICON_WARN="${YELLOW}${NC}"
+    ICON_ERR="${RED}${NC}"; ICON_SKIP="${YELLOW}${NC}"; ICON_LINK="${CYAN}${NC}"
+  fi
+else
+  GREEN=''; CYAN=''; YELLOW=''; RED=''; BOLD=''; DIM=''; NC=''
+  ICON_OK="[ok]"; ICON_WARN="[!]"; ICON_ERR="[err]"
+  ICON_SKIP="[-]"; ICON_LINK="->"
+fi
+
+info()    { printf "  %s %s\n" "$ICON_OK" "$1"; }
+link()    { printf "  %s %s\n" "$ICON_LINK" "$1"; }
+skip()    { printf "  %s %s\n" "$ICON_SKIP" "$1"; }
+err()     { printf "  %s %s\n" "$ICON_ERR" "$1" >&2; }
+warn()    { printf "  %s %s\n" "$ICON_WARN" "$1"; }
+heading() { printf "\n%s%s%s\n" "$BOLD" "$1" "$NC"; }
+dim()     { printf "%s%s%s\n" "$DIM" "$1" "$NC"; }
+
+# toml.sh — TOML parsing and config merging
+# Requires: python3 3.11+ (tomllib), jq
+
+parse_toml() {
+  local toml_file="$1"
+  python3 -c "
+import tomllib, json, sys
+try:
+    with open('${toml_file}', 'rb') as f:
+        print(json.dumps(tomllib.load(f)))
+except Exception as e:
+    print(json.dumps({}), file=sys.stderr)
+    sys.exit(1)
+" 2>/dev/null || echo "{}"
+}
+
+parse_toml_stdin() {
+  python3 -c "
+import tomllib, json, sys
+try:
+    print(json.dumps(tomllib.load(sys.stdin.buffer)))
+except Exception as e:
+    print(json.dumps({}), file=sys.stderr)
+    sys.exit(1)
+" 2>/dev/null || echo "{}"
+}
+
+load_user_config() {
+  local user_toml="$STORE_DIR/config.toml"
+  if [[ -f "$user_toml" ]]; then
+    parse_toml "$user_toml"
+  else
+    echo "{}"
+  fi
+}
+
+merge_configs() {
+  local default_json="$1" user_json="$2"
+  python3 -c "
+import json, sys
+default = json.loads(sys.argv[1])
+user = json.loads(sys.argv[2])
+
+for key in user:
+    if key == 'tool' and key in default:
+        default_tools = {t['name']: t for t in default['tool']}
+        for t in user['tool']:
+            default_tools[t['name']] = t
+        default['tool'] = list(default_tools.values())
+    elif isinstance(user[key], dict) and key in default and isinstance(default[key], dict):
+        default[key].update(user[key])
+    else:
+        default[key] = user[key]
+
+print(json.dumps(default))
+" "$default_json" "$user_json" 2>/dev/null || echo "$default_json"
+}
+
+# Helpers using the merged config JSON ($TOML_JSON must be set)
+tq()       { echo "$TOML_JSON" | jq -r "$@" 2>/dev/null || true; }
+
+tool_names()        { tq '.tool[].name // empty'; }
+tool_desc()         { tq ".tool[] | select(.name == \"$1\") | .desc // \"\""; }
+tool_external()     { tq ".tool[] | select(.name == \"$1\") | .external // \"\""; }
+tool_dependencies() { tq ".tool[] | select(.name == \"$1\") | .dependencies[] // empty" 2>/dev/null; }
+tool_exists()       { tq ".tool[] | select(.name == \"$1\") | .name // \"\""; }
+
+tool_int_count()    { tq ".tool[] | select(.name == \"$1\") | (.internal | length) // 0"; }
+tool_int_from()     { tq ".tool[] | select(.name == \"$1\") | .internal[$2].from // \"\""; }
+tool_int_to()       { tq ".tool[] | select(.name == \"$1\") | .internal[$2].to // \"\""; }
+tool_int_desc()     { tq ".tool[] | select(.name == \"$1\") | .internal[$2].desc // \"\""; }
+
+tool_file_count()   { tq ".tool[] | select(.name == \"$1\") | (.file | length) // 0"; }
+tool_file_path()    { tq ".tool[] | select(.name == \"$1\") | .file[$2].path // \"\""; }
+tool_file_desc()    { tq ".tool[] | select(.name == \"$1\") | .file[$2].desc // \"\""; }
+
+tool_internals_display() {
+  tq ".tool[] | select(.name == \"$1\") | .internal[] | \"\(.from) → \(.to)  [\(.desc // \"\")]\"" 2>/dev/null
+}
+tool_files_display() {
+  tq ".tool[] | select(.name == \"$1\") | .file[] | \"\(.path)  [\(.desc // \"\")]\"" 2>/dev/null
+}
+tool_deps_display() {
+  local deps=$(tq ".tool[] | select(.name == \"$1\") | .dependencies | join(\", \") // empty" 2>/dev/null)
+  [[ -n "$deps" ]] && echo "requires: $deps  [dependencies]" || true
+}
+
+shared_keys()  { tq '.shared | keys | .[] // empty'; }
+shared_path()  { tq ".shared.\"$1\".path // \"\""; }
+shared_desc()  { tq ".shared.\"$1\".desc // \"\""; }
+
+# backup.sh — Backup and restore utilities
+
+backup() {
+  local src="$1" label="$2"
+  if [[ -e "$src" ]]; then
+    local bak="${src}.bak.${TIMESTAMP}"
+    if ${DRY_RUN:-false}; then
+      skip "(would backup) $label → $bak"
+    else
+      mv "$src" "$bak"
+      link "Backed up $label → $bak"
+    fi
+  fi
+}
+
+BACKUP_DIR=""
+
+backup_store() {
+  BACKUP_DIR="${HOME}/.nx-agents-config.store.bak.${TIMESTAMP}"
+  if [[ -d "$STORE_DIR" ]] && [[ -n "$(ls -A "$STORE_DIR" 2>/dev/null)" ]]; then
+    if ${DRY_RUN:-false}; then
+      skip "(would backup) store/ → $BACKUP_DIR"
+    else
+      cp -a "$STORE_DIR" "$BACKUP_DIR" 2>/dev/null || cp -R "$STORE_DIR" "$BACKUP_DIR"
+      info "Store backed up → $BACKUP_DIR"
+    fi
+  else
+    skip "No store/ data to backup"
+    BACKUP_DIR=""
+  fi
+}
+
+move_to_removed() {
+  local path="$1" reason="$2"
+  local dest="$REMOVED_DIR/$(basename "$path")"
+  if ${DRY_RUN:-false}; then
+    skip "(would move to .removed/) $path — $reason"
+  else
+    mkdir -p "$REMOVED_DIR"
+    mv "$path" "$dest"
+    link "Moved to .removed/: $path — $reason"
+  fi
+}
+
+# symlink.sh — Symlink management utilities
+
+ensure_dir() {
+  local dir="$1" desc="$2"
+  if [[ ! -d "$dir" ]]; then
+    run mkdir -p "$dir"
+    run touch "$dir/.gitkeep"
+    info "Created $desc: $dir"
+  fi
+}
+
+ensure_file() {
+  local filepath="$1" desc="$2"
+  if [[ ! -f "$filepath" ]]; then
+    skip "Missing file: $desc ($filepath — create manually)"
+  else
+    skip "File exists: $desc"
+  fi
+}
+
+ensure_symlink() {
+  local target="$1" link_path="$2" desc="$3"
+  if [[ -L "$link_path" ]]; then
+    local current
+    current=$(readlink "$link_path")
+    if [[ "$current" == "$target" ]]; then
+      skip "Symlink already correct: $desc"
+      return
+    fi
+    run rm "$link_path"
+    link "Replaced symlink: $desc"
+  elif [[ -e "$link_path" ]]; then
+    run rm -rf "$link_path"
+    link "Replaced existing path: $desc"
+  fi
+  if ! ${DRY_RUN:-false}; then
+    ln -s "$target" "$link_path"
+  fi
+  link "Symlink: $desc"
+}
+
+ensure_external_symlink() {
+  local target="$1" link_path="$2" desc="$3"
+  local expanded_link="${link_path/#\~/$HOME}"
+  local expanded_target="${target/#\~/$HOME}"
+
+  if [[ -L "$expanded_link" ]]; then
+    local current
+    current=$(readlink "$expanded_link")
+    if [[ "$current" == "$expanded_target" ]]; then
+      skip "External symlink already correct: $desc"
+      return
+    fi
+    run rm "$expanded_link"
+    link "Replaced external symlink: $desc"
+  elif [[ -e "$expanded_link" ]]; then
+    backup "$expanded_link" "$desc config"
+    if ${DRY_RUN:-false}; then
+      skip "(would symlink) $expanded_link → $expanded_target"
+    else
+      ln -s "$expanded_target" "$expanded_link"
+      link "External symlink: $desc ($expanded_link)"
+    fi
+  else
+    if ${DRY_RUN:-false}; then
+      skip "(would symlink) $expanded_link → $expanded_target"
+    else
+      mkdir -p "$(dirname "$expanded_link")"
+      ln -s "$expanded_target" "$expanded_link"
+      link "External symlink: $desc ($expanded_link)"
+    fi
+  fi
+}
+
+remove_symlink() {
+  local link_path="$1" desc="$2"
+  local expanded="${link_path/#\~/$HOME}"
+  if [[ -L "$expanded" ]]; then
+    run rm "$expanded"
+    link "Removed symlink: $desc"
+  elif [[ -e "$expanded" ]]; then
+    warn "Not a symlink, skipping: $expanded"
+  else
+    skip "No symlink to remove: $desc"
+  fi
+}
+
+# util.sh — Shared utility functions
+
+realpath_safe() {
+  local path="$1"
+  while [[ -L "$path" ]]; do
+    path="$(readlink "$path")"
+  done
+  cd "$(dirname "$path")" 2>/dev/null && echo "$(pwd -P)/$(basename "$path")"
+}
+
+run() {
+  if ${DRY_RUN:-false}; then
+    skip "(would run) $*"
+  else
+    "$@"
+  fi
+}
+
+check_deps() {
+  local tool="$1" missing=0
+  while IFS= read -r dep; do
+    [[ -z "$dep" ]] && continue
+    if command -v "$dep" &>/dev/null; then
+      info "Dependency '$dep' found for '$tool'"
+    else
+      warn "Missing dependency '$dep' for '$tool'"
+      missing=1
+    fi
+  done < <(tool_dependencies "$tool")
+  return $missing
+}
+
+# tree.sh — Display configured directory tree
+
+cmd_tree() {
+  echo ""
+  heading "${CONFIG_NAME}/  (~/.nx-agents-config)"
+
+  echo "├── store/    $(dim '[your data — gitignored, separate git remote]')"
+
+  # shared sections
+  echo "├── shared/"
+  local keys=()
+  while IFS= read -r k; do keys+=("$k"); done < <(shared_keys)
+  local last_idx=$((${#keys[@]} - 1))
+  for i in "${!keys[@]}"; do
+    local k="${keys[$i]}"
+    local branch="├──"
+    [[ $i -eq $last_idx ]] && branch="└──"
+    echo "│   $branch ${k}/  $(dim "$(shared_desc "$k")")"
+  done
+
+  # tools
+  local tools=()
+  while IFS= read -r t; do tools+=("$t"); done < <(tool_names)
+  local t_last=$((${#tools[@]} - 1))
+  for ti in "${!tools[@]}"; do
+    local t="${tools[$ti]}"
+    local desc=$(tool_desc "$t")
+    local ext=$(tool_external "$t")
+    local is_last=false
+    [[ $ti -eq $t_last ]] && is_last=true
+
+    local tbranch="├──"
+    $is_last && tbranch="└──"
+    echo "$tbranch ${t}/           $(dim "${desc}  (→ ${ext})")"
+
+    # sub-items (internal symlinks + files + dependencies)
+    local ints=()
+    while IFS= read -r line; do ints+=("$line"); done < <(tool_internals_display "$t" 2>/dev/null || true)
+    local fls=()
+    while IFS= read -r line; do fls+=("$line"); done < <(tool_files_display "$t" 2>/dev/null || true)
+    local deps_line
+    deps_line=$(tool_deps_display "$t" 2>/dev/null || true)
+
+    local sub_items=("${ints[@]}" "${fls[@]}")
+    [[ -n "$deps_line" ]] && sub_items+=("$deps_line")
+    local s_last=$((${#sub_items[@]} - 1))
+    for si in "${!sub_items[@]}"; do
+      local sbranch="├──"
+      [[ $si -eq $s_last ]] && sbranch="└──"
+      if $is_last; then
+        echo "    $sbranch ${sub_items[$si]}"
+      else
+        echo "│   $sbranch ${sub_items[$si]}"
+      fi
+    done
+  done
+
+  # repo files
+  echo "├── nx-agents-config  $(dim '[self-contained binary]')"
+  echo "├── LICENSE           $(dim '[MIT]')"
+  echo "└── README.md         $(dim '[documentation]')"
+
+  # external symlinks
+  echo ""
+  heading "External symlinks:"
+  for t in "${tools[@]}"; do
+    local ext=$(tool_external "$t")
+    echo "  ${ext}  →  store/${t}/"
+  done
+  echo "  ~/.local/bin/nx-agents-config  →  nx-agents-config"
+}
+
+# setup.sh — Initial setup: scaffold store, merge configs, create symlinks
+
+cmd_setup() {
+  heading "Setting up ${CONFIG_NAME}..."
+  dim "Timestamp: $TIMESTAMP"
+  dim "Store: $STORE_DIR"
+
+  # 1. Ensure store/ exists
+  heading "Store directory"
+  if [[ ! -d "$STORE_DIR" ]]; then
+    run mkdir -p "$STORE_DIR"
+    run touch "$STORE_DIR/.gitkeep"
+    info "Created store/: $STORE_DIR"
+  else
+    skip "Store already exists: $STORE_DIR"
+  fi
+
+  # 2. Offer git init for store
+  if [[ ! -d "$STORE_DIR/.git" ]]; then
+    if ${DRY_RUN:-false}; then
+      skip "(would prompt for git init)"
+    else
+      echo ""
+      echo -n "  Initialize store as a git repo? [Y/n] "
+      read -r init_git
+      if [[ -z "$init_git" || "$init_git" =~ ^[Yy] ]]; then
+        run git -C "$STORE_DIR" init
+        info "Git init'd store/"
+        echo "  Enter your store remote URL (e.g., git@github.com:user/nx-agents-config-store.git) [leave empty to skip]:"
+        echo -n "  > "
+        read -r remote_url
+        if [[ -n "$remote_url" ]]; then
+          run git -C "$STORE_DIR" remote add origin "$remote_url"
+          info "Remote added: $remote_url"
+        fi
+      fi
+    fi
+  fi
+
+  # 3. Create default store/config.toml if missing
+  local user_config="$STORE_DIR/config.toml"
+  if [[ ! -f "$user_config" ]]; then
+    if ${DRY_RUN:-false}; then
+      skip "(would create) store/config.toml"
+    else
+      cat > "$user_config" << 'EOF'
+# config.toml — User overrides for nx-agents-config
+# This file is merged with nx-agents.toml (tool defaults).
+# Entries here override defaults with the same name.
+#
+# Examples:
+#   [[tool]]
+#   name = "my-tool"
+#   desc = "My custom agent"
+#   external = "~/.config/my-tool"
+EOF
+      info "Created: $user_config"
+    fi
+  else
+    skip "User config exists: $user_config"
+  fi
+
+  # 4. Shared directories
+  heading "Shared resources"
+  while IFS= read -r k; do
+    local rel_path
+    rel_path=$(shared_path "$k")
+    ensure_dir "$NX_AGENTS_HOME/$rel_path" "shared/$k ($(shared_desc "$k"))"
+    # Also ensure in store/
+    ensure_dir "$STORE_DIR/$rel_path" "store/shared/$k ($(shared_desc "$k"))"
+  done < <(shared_keys)
+
+  # 5. Tools
+  while IFS= read -r t; do
+    local desc
+    desc=$(tool_desc "$t")
+    local ext
+    ext=$(tool_external "$t")
+    local tool_dir="$STORE_DIR/$t"
+
+    heading "Tool: $t ($desc)"
+    check_deps "$t" || true
+    ensure_dir "$tool_dir" "$t directory (store/)"
+
+    # Internal symlinks within tool dir
+    local int_count
+    int_count=$(tool_int_count "$t")
+    if [[ "$int_count" != "0" ]]; then
+      for i in $(seq 0 $((int_count - 1))); do
+        local from to idesc link_path target_path
+        from=$(tool_int_from "$t" "$i")
+        to=$(tool_int_to "$t" "$i")
+        idesc=$(tool_int_desc "$t" "$i")
+        link_path="$tool_dir/$from"
+        target_path="$STORE_DIR/$to"
+        ensure_symlink "$target_path" "$link_path" "$idesc"
+      done
+    fi
+
+    # Config files
+    local f_count
+    f_count=$(tool_file_count "$t")
+    if [[ "$f_count" != "0" ]]; then
+      for i in $(seq 0 $((f_count - 1))); do
+        local fpath fdesc
+        fpath=$(tool_file_path "$t" "$i")
+        fdesc=$(tool_file_desc "$t" "$i")
+        ensure_file "$tool_dir/$fpath" "$fdesc"
+      done
+    fi
+
+    # External symlink (tool config dir → store/toolname/)
+    ensure_external_symlink "$tool_dir" "$ext" "$desc"
+  done < <(tool_names)
+
+    # 6. CLI symlink
+  heading "CLI entry point"
+  local script_path
+  script_path="$(realpath_safe "${BASH_SOURCE[0]}")"
+  local cli_link="$HOME/.local/bin/nx-agents-config"
+  ensure_external_symlink "$script_path" "$cli_link" "CLI binary"
+
+  if ! echo "$PATH" | tr ':' '\n' | grep -q "$HOME/.local/bin"; then
+    dim "  Note: Add ~/.local/bin to your PATH:"
+    dim "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+  fi
+
+  dim "  Star us: https://github.com/nex-ovia/nx-agents-config"
+  echo ""
+  info "Setup complete! Run '${BOLD}nx-agents-config tree${NC}' to verify."
+}
+
+# update.sh — Reconcile filesystem to match merged config
+
+cmd_update() {
+  heading "Updating from merged config..."
+  dim "Store: $STORE_DIR"
+
+  # 1. Shared directories
+  heading "Ensuring shared resources"
+  while IFS= read -r k; do
+    local rel_path
+    rel_path=$(shared_path "$k")
+    ensure_dir "$NX_AGENTS_HOME/$rel_path" "shared/$k ($(shared_desc "$k"))"
+    ensure_dir "$STORE_DIR/$rel_path" "store/shared/$k ($(shared_desc "$k"))"
+  done < <(shared_keys)
+
+  # 2. Tools
+  while IFS= read -r t; do
+    local desc ext tool_dir
+    desc=$(tool_desc "$t")
+    ext=$(tool_external "$t")
+    tool_dir="$STORE_DIR/$t"
+
+    heading "Tool: $t ($desc)"
+    check_deps "$t" || true
+    ensure_dir "$tool_dir" "$t (store/)"
+
+    # Internal symlinks
+    local int_count
+    int_count=$(tool_int_count "$t")
+    if [[ "$int_count" != "0" ]]; then
+      for i in $(seq 0 $((int_count - 1))); do
+        local from to idesc link_path target_path
+        from=$(tool_int_from "$t" "$i")
+        to=$(tool_int_to "$t" "$i")
+        idesc=$(tool_int_desc "$t" "$i")
+        link_path="$tool_dir/$from"
+        target_path="$STORE_DIR/$to"
+        ensure_symlink "$target_path" "$link_path" "$idesc"
+      done
+    fi
+
+    # Config files
+    local f_count
+    f_count=$(tool_file_count "$t")
+    if [[ "$f_count" != "0" ]]; then
+      for i in $(seq 0 $((f_count - 1))); do
+        local fpath fdesc
+        fpath=$(tool_file_path "$t" "$i")
+        fdesc=$(tool_file_desc "$t" "$i")
+        ensure_file "$tool_dir/$fpath" "$fdesc"
+      done
+    fi
+
+    # External symlink
+    ensure_external_symlink "$tool_dir" "$ext" "$desc"
+  done < <(tool_names)
+
+  # 3. Orphan detection — store/ subdirs not in TOML
+  heading "Orphan detection (store/)"
+  local known=("shared" ".git" ".gitkeep" "config.toml")
+  while IFS= read -r t; do known+=("$t"); done < <(tool_names)
+
+  if [[ -d "$STORE_DIR" ]]; then
+    for entry in "$STORE_DIR"/*; do
+      local base
+      base=$(basename "$entry")
+      [[ -d "$entry" ]] || continue
+      local is_known=false
+      for k in "${known[@]}"; do
+        [[ "$base" == "$k" ]] && { is_known=true; break; }
+      done
+      $is_known && continue
+      move_to_removed "$entry" "Not in TOML"
+    done
+  fi
+
+  echo ""
+  info "Update complete!"
+}
+
+# sync.sh — Git sync operations on the user's store/ repo
+
+cmd_sync() {
+  heading "Syncing store/ data..."
+  dim "Store: $STORE_DIR"
+
+  if [[ ! -d "$STORE_DIR/.git" ]]; then
+    warn "store/ is not a git repository."
+    echo -n "  Initialize now? [Y/n] "
+    read -r init_repo
+    if [[ -z "$init_repo" || "$init_repo" =~ ^[Yy] ]]; then
+      run git -C "$STORE_DIR" init
+      info "Git repo initialized in store/"
+      echo -n "  Enter remote URL (or leave empty): "
+      read -r remote_url
+      if [[ -n "$remote_url" ]]; then
+        run git -C "$STORE_DIR" remote add origin "$remote_url"
+        info "Remote added: $remote_url"
+      fi
+    else
+      skip "Cancelled"
+    fi
+    return
+  fi
+
+  (
+    cd "$STORE_DIR"
+
+    # Fetch
+    git fetch --quiet 2>/dev/null || true
+
+    # Show status
+    local status_output
+    status_output=$(git status --short 2>/dev/null || true)
+    if [[ -n "$status_output" ]]; then
+      heading "Uncommitted changes"
+      echo "$status_output"
+    else
+      skip "Working tree clean"
+    fi
+
+    # Check for upstream
+    local remote
+    remote=$(git remote 2>/dev/null || echo "")
+    if [[ -n "$remote" ]]; then
+      local behind
+      behind=$(git rev-list --count HEAD..@{u} 2>/dev/null || echo "0")
+      if [[ "$behind" != "0" ]]; then
+        info "Remote has $behind new commit(s)"
+        echo -n "  Pull? [Y/n] "
+        read -r do_pull
+        if [[ -z "$do_pull" || "$do_pull" =~ ^[Yy] ]]; then
+          run git pull --ff-only
+          info "Pulled updates"
+        fi
+      fi
+    fi
+
+    # Offer to commit and push
+    local has_changes
+    has_changes=$(git status --porcelain 2>/dev/null || true)
+    if [[ -n "$has_changes" ]]; then
+      echo ""
+      echo -n "  Commit and push changes? [y/N] "
+      read -r do_commit
+      if [[ "$do_commit" =~ ^[Yy] ]]; then
+        echo -n "  Commit message: "
+        read -r msg
+        msg="${msg:-Update store/ config}"
+        run git add -A
+        run git commit -m "$msg"
+        if [[ -n "$remote" ]]; then
+          run git push
+          info "Pushed to remote"
+        fi
+      fi
+    fi
+  )
+}
+
+# project.sh — Project management in store/
+
+cmd_project() {
+  local subcmd="${1:-help}"
+  shift 2>/dev/null || true
+
+  case "$subcmd" in
+    add)
+      local name="${1:-}"
+      if [[ -z "$name" ]]; then
+        err "Usage: nx-agents-config project add <name>"
+        exit 1
+      fi
+      if ! echo "$name" | grep -qE '^[a-zA-Z0-9][a-zA-Z0-9_-]+$'; then
+        err "Project name must be alphanumeric with hyphens/underscores"
+        exit 1
+      fi
+
+      local proj_dir="$STORE_DIR/shared/projects/$name"
+      heading "Adding project: $name"
+
+      if [[ -d "$proj_dir" ]]; then
+        skip "Project already exists: $name"
+        return
+      fi
+
+      run mkdir -p "$proj_dir"
+      info "Created: $proj_dir"
+
+      # Create template files
+      cat > "$proj_dir/context.md" << 'EOF'
+# Project: <name>
+## Goals
+## Architecture
+## Notes
+EOF
+      info "Created: context.md"
+
+      cat > "$proj_dir/sessions.toml" << 'EOF'
+[sessions]
+# Recent session IDs, newest first
+recent = []
+EOF
+      info "Created: sessions.toml"
+
+      cat > "$proj_dir/meta.toml" << 'EOF'
+[meta]
+created = "<date>"
+description = ""
+tags = []
+EOF
+      info "Created: meta.toml"
+      ;;
+
+    list)
+      heading "Projects"
+      local proj_base="$STORE_DIR/shared/projects"
+      if [[ ! -d "$proj_base" ]]; then
+        skip "No projects directory yet"
+        return
+      fi
+      local count=0
+      for p in "$proj_base"/*/; do
+        [[ -d "$p" ]] || continue
+        count=$((count + 1))
+        local name
+        name=$(basename "$p")
+        local desc=""
+        if [[ -f "$p/meta.toml" ]]; then
+          desc=$(grep -E '^description\s*=' "$p/meta.toml" 2>/dev/null | head -1 | sed 's/.*= *"//;s/"$//')
+        fi
+        echo "  ${CYAN}•${NC} $name  $(dim "${desc}")"
+      done
+      if [[ "$count" -eq 0 ]]; then
+        skip "No projects found"
+      fi
+      ;;
+
+    help|--help|-h|"")
+      echo "Usage: nx-agents-config project <command>"
+      echo ""
+      echo "Commands:"
+      echo "  add <name>     Create a new project in store/"
+      echo "  list           List projects"
+      ;;
+
+    *)
+      err "Unknown project command: $subcmd"
+      echo "Usage: nx-agents-config project help"
+      exit 1
+      ;;
+  esac
+}
+
+# tool.sh — Tool management (adds to store/config.toml)
+
+cmd_tool() {
+  local subcmd="${1:-help}"
+  shift 2>/dev/null || true
+
+  case "$subcmd" in
+    add)
+      local name="${1:-}"
+      if [[ -z "$name" ]]; then
+        err "Usage: nx-agents-config tool add <name>"
+        exit 1
+      fi
+      if ! echo "$name" | grep -qE '^[a-z][a-z0-9_-]+$'; then
+        err "Tool name must be lowercase alphanumeric with hyphens/underscores"
+        exit 1
+      fi
+      if [[ -n "$(tool_exists "$name")" ]]; then
+        err "Tool '$name' already exists in merged config"
+        exit 1
+      fi
+
+      heading "Adding tool: $name"
+
+      echo -n "  Description: "
+      read -r desc
+      desc="${desc:-$name coding agent}"
+
+      echo -n "  External config path (e.g., ~/.config/$name): "
+      read -r ext_path
+      ext_path="${ext_path:-~/.config/$name}"
+
+      echo -n "  CLI dependencies (comma-separated, e.g. opencode,bun) [empty for none]: "
+      read -r deps_input
+      deps_input="${deps_input:-}"
+
+      # Append to store/config.toml
+      local user_config="$STORE_DIR/config.toml"
+      if [[ ! -f "$user_config" ]]; then
+        echo "# config.toml — User overrides for nx-agents-config" > "$user_config"
+      fi
+
+      {
+        echo ""
+        echo "[[tool]]"
+        echo "name = \"$name\""
+        echo "desc = \"$desc\""
+        echo "external = \"$ext_path\""
+        if [[ -n "$deps_input" ]]; then
+          local dep_list=""
+          IFS=',' read -ra deps_arr <<< "$deps_input"
+          for d in "${deps_arr[@]}"; do
+            d="$(echo "$d" | xargs)"
+            [[ -n "$dep_list" ]] && dep_list="$dep_list, "
+            dep_list="${dep_list}\"$d\""
+          done
+          echo "dependencies = [$dep_list]"
+        fi
+        echo ""
+        echo "  [[tool.internal]]"
+        echo "  from = \"skills\""
+        echo "  to = \"../shared/skills\""
+        echo "  desc = \"Shared skills\""
+      } >> "$user_config"
+
+      info "Added '$name' to store/config.toml"
+
+      # Create tool dir in store/
+      local tool_dir="$STORE_DIR/$name"
+      ensure_dir "$tool_dir" "$name (store/)"
+      ensure_symlink "$STORE_DIR/shared/skills" "$tool_dir/skills" "Shared skills"
+
+      echo ""
+      info "Tool '$name' added! Run '${BOLD}nx-agents-config update${NC}' to sync symlinks."
+      ;;
+
+    help|--help|-h|"")
+      echo "Usage: nx-agents-config tool <command>"
+      echo ""
+      echo "Commands:"
+      echo "  add <name>     Scaffold a new tool in store/config.toml"
+      ;;
+
+    *)
+      err "Unknown tool command: $subcmd"
+      echo "Usage: nx-agents-config tool help"
+      exit 1
+      ;;
+  esac
+}
+
+# update-tool.sh — Self-update the nx-agents-config binary from GitHub raw
+
+cmd_update_tool() {
+  heading "Updating nx-agents-config..."
+  dim "Binary location: $NX_AGENTS_HOME/nx-agents-config"
+
+  if ! command -v curl &>/dev/null; then
+    err "curl is required for update-tool"
+    exit 1
+  fi
+
+  local bin_url="https://raw.githubusercontent.com/nex-ovia/nx-agents-config/main/nx-agents-config"
+  local tmp_file
+  tmp_file=$(mktemp)
+
+  info "Downloading latest binary..."
+  if ! curl -fsSL -o "$tmp_file" "$bin_url"; then
+    rm -f "$tmp_file"
+    err "Failed to download. Check your internet connection."
+    exit 1
+  fi
+
+  chmod +x "$tmp_file"
+
+  local script_path
+  script_path="$(realpath_safe "${BASH_SOURCE[0]}")"
+
+  if ! mv "$tmp_file" "$script_path"; then
+    rm -f "$tmp_file"
+    err "Failed to replace binary at $script_path"
+    exit 1
+  fi
+
+  info "Updated successfully!"
+  dim "Please re-run nx-agents-config for changes to take effect."
+}
+
+# uninstall.sh — Backup store/ and remove everything
+
+cmd_uninstall() {
+  heading "Uninstalling nx-agents-config..."
+  warn "This will remove all nx-agents-config files and symlinks."
+  echo "  Your store/ data will be backed up."
+  echo ""
+  if ${DRY_RUN:-false}; then
+    skip "Dry-run — skipping confirmation"
+  else
+    echo -n "  Continue? [y/N] "
+    read -r confirm
+    [[ "$confirm" =~ ^[Yy] ]] || { skip "Cancelled"; exit 0; }
+  fi
+
+  # 1. Backup store
+  heading "Backing up store/ data"
+  backup_store
+  local bak_dir="$BACKUP_DIR"
+
+  # 2. Remove external symlinks for tools
+  heading "Removing external symlinks"
+  while IFS= read -r t; do
+    local ext
+    ext=$(tool_external "$t")
+    remove_symlink "$ext" "$(tool_desc "$t")"
+  done < <(tool_names)
+
+  # 3. Remove CLI symlink
+  remove_symlink "$HOME/.local/bin/nx-agents-config" "CLI binary"
+
+  # 4. Remove NX_AGENTS_HOME
+  heading "Removing tool directory"
+  if ${DRY_RUN:-false}; then
+    skip "(would remove) $NX_AGENTS_HOME"
+  else
+    run rm -rf "$NX_AGENTS_HOME"
+    info "Removed: $NX_AGENTS_HOME"
+  fi
+
+  # 5. Summary
+  echo ""
+  heading "Uninstall complete!"
+  echo ""
+  if [[ -n "$bak_dir" ]]; then
+    echo "  Your data was backed up to:"
+    echo "    ${bak_dir}"
+    echo ""
+    echo "  To restore:"
+    echo "    1. mkdir -p \"$(dirname "$STORE_DIR")\""
+    echo "    2. mv ${bak_dir} ${STORE_DIR}"
+    echo "    3. Re-install via the install script"
+    echo "    4. Run 'nx-agents-config setup'"
+  else
+    echo "  No store data to restore."
+  fi
+}
+
+# main.sh — Dispatcher: sources libs/commands, parses args, routes to cmd_*
+
+# Source libraries
+
+# ---------------------------------------------------------------------------
+# Global state
+# ---------------------------------------------------------------------------
+TIMESTAMP=$(date +%Y-%m-%d.%H%M%S)
+DRY_RUN=false
+STORE_DIR="$NX_AGENTS_HOME/store"
+REMOVED_DIR="$NX_AGENTS_HOME/.removed.$TIMESTAMP"
+
+# Parse default + user config, merge
+if [[ -f "$NX_AGENTS_HOME/nx-agents.toml" ]]; then
+  TOML_JSON_DEFAULT="$(parse_toml "$NX_AGENTS_HOME/nx-agents.toml")"
+else
+  TOML_JSON_DEFAULT="$(parse_toml_stdin <<< "$DEFAULT_TOML")"
+fi
+USER_CONFIG_JSON="$(load_user_config)"
+TOML_JSON="$(merge_configs "$TOML_JSON_DEFAULT" "$USER_CONFIG_JSON")"
+
+# Config values from merged TOML
+tq() { echo "$TOML_JSON" | jq -r "$@" 2>/dev/null || true; }
+
+CONFIG_NAME=$(tq '.config.name // "nx-agents-config"')
+
+# Source commands
+
+# ---------------------------------------------------------------------------
+# Help
+# ---------------------------------------------------------------------------
+cmd_help() {
+  cat <<EOF
+${BOLD}nx-agents-config${NC} — Centralized coding agent configuration
+
+${BOLD}Usage:${NC}  nx-agents-config <command> [options]
+
+${BOLD}Commands:${NC}
+  tree                  Show configured directory tree
+  setup                 Initial setup (create store, symlinks, backups)
+  update                Reconcile filesystem to match config
+  sync                  Git sync your store/ data
+  project add <name>    Add a new project
+  project list          List projects
+  tool add <name>       Scaffold a new tool in store/config.toml
+  update-tool           Update nx-agents-config tool (download template)
+  uninstall             Backup store + remove everything
+
+${BOLD}Options:${NC}
+  --dry-run             Preview changes without making them
+  --no-color            Disable colored output
+  -h, --help            Show this help
+
+EOF
+}
+
+# ---------------------------------------------------------------------------
+# Parse global options
+# ---------------------------------------------------------------------------
+ARGS=()
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --no-color)
+      GREEN=''; CYAN=''; YELLOW=''; RED=''; BOLD=''; DIM=''; NC=''
+      ICON_OK="[ok]"; ICON_LINK="->"; ICON_SKIP="[-]"; ICON_ERR="[err]"; ICON_WARN="[!]"
+      ;;
+    *) ARGS+=("$arg") ;;
+  esac
+done
+set -- "${ARGS[@]}"
+
+# ---------------------------------------------------------------------------
+# Dispatch
+# ---------------------------------------------------------------------------
+case "${1:-help}" in
+  tree) shift; cmd_tree "$@" ;;
+  setup) shift; cmd_setup "$@" ;;
+  update) shift; cmd_update "$@" ;;
+  sync) shift; cmd_sync "$@" ;;
+  update-tool) shift; cmd_update_tool "$@" ;;
+  uninstall) shift; cmd_uninstall "$@" ;;
+  project)
+    shift
+    cmd_project "$@"
+    ;;
+  tool)
+    shift
+    cmd_tool "$@"
+    ;;
+  help|--help|-h|"")
+    cmd_help
+    ;;
+  *)
+    err "Unknown command: $1"
+    echo "Usage: nx-agents-config help"
+    exit 1
+    ;;
+esac
