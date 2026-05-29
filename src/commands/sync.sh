@@ -1,79 +1,66 @@
-# sync.sh — Git sync operations on the user's store/ repo
+# sync.sh — Non-interactive git sync on store/ (auto commit + pull + push)
 
 cmd_sync() {
-  heading "Syncing store/ data..."
+  local msg="${1:-}"
+  heading "Syncing store/..."
   dim "Store: $STORE_DIR"
 
   if [[ ! -d "$STORE_DIR/.git" ]]; then
-    warn "store/ is not a git repository."
-    echo -n "  Initialize now? [Y/n] "
-    read -r init_repo
-    if [[ -z "$init_repo" || "$init_repo" =~ ^[Yy] ]]; then
-      run git -C "$STORE_DIR" init
-      info "Git repo initialized in store/"
-      echo -n "  Enter remote URL (or leave empty): "
-      read -r remote_url
-      if [[ -n "$remote_url" ]]; then
-        run git -C "$STORE_DIR" remote add origin "$remote_url"
-        info "Remote added: $remote_url"
-      fi
-    else
-      skip "Cancelled"
-    fi
-    return
+    err "store/ is not a git repository. Run 'nx-agents-config setup' first."
+    exit 1
   fi
 
   (
     cd "$STORE_DIR"
 
-    # Fetch
-    git fetch --quiet 2>/dev/null || true
-
-    # Show status
-    local status_output
-    status_output=$(git status --short 2>/dev/null || true)
-    if [[ -n "$status_output" ]]; then
-      heading "Uncommitted changes"
-      echo "$status_output"
-    else
-      skip "Working tree clean"
+    # WAL checkpoint for opencode.db to ensure committed DB is consistent
+    local db="$STORE_DIR/opencode/userdata/opencode.db"
+    if [[ -f "$db" ]]; then
+      sqlite3 "$db" "PRAGMA wal_checkpoint(TRUNCATE);" 2>/dev/null || true
     fi
 
-    # Check for upstream
     local remote
-    remote=$(git remote 2>/dev/null || echo "")
+    remote=$(git remote 2>/dev/null | head -1 || echo "")
+
+    # Fetch and fast-forward pull if behind
     if [[ -n "$remote" ]]; then
+      git fetch --quiet origin 2>/dev/null || true
       local behind
       behind=$(git rev-list --count HEAD..@{u} 2>/dev/null || echo "0")
       if [[ "$behind" != "0" ]]; then
-        info "Remote has $behind new commit(s)"
-        echo -n "  Pull? [Y/n] "
-        read -r do_pull
-        if [[ -z "$do_pull" || "$do_pull" =~ ^[Yy] ]]; then
-          run git pull --ff-only
-          info "Pulled updates"
+        if git pull --ff-only --quiet 2>/dev/null; then
+          info "Pulled $behind commit(s) from remote"
+        else
+          err "Cannot fast-forward: remote has diverged. Resolve manually:"
+          err "  cd $STORE_DIR && git pull"
+          exit 1
         fi
       fi
     fi
 
-    # Offer to commit and push
+    # Commit if there are changes
     local has_changes
     has_changes=$(git status --porcelain 2>/dev/null || true)
     if [[ -n "$has_changes" ]]; then
-      echo ""
-      echo -n "  Commit and push changes? [y/N] "
-      read -r do_commit
-      if [[ "$do_commit" =~ ^[Yy] ]]; then
-        echo -n "  Commit message: "
-        read -r msg
-        msg="${msg:-Update store/ config}"
-        run git add -A
-        run git commit -m "$msg"
-        if [[ -n "$remote" ]]; then
-          run git push
-          info "Pushed to remote"
-        fi
+      local commit_msg
+      commit_msg="${msg:-sync: $(date +%Y-%m-%d.%H%M%S)}"
+      run git add -A
+      run git commit -m "$commit_msg"
+      info "Committed: $commit_msg"
+    else
+      skip "Working tree clean — nothing to commit"
+    fi
+
+    # Push if remote configured
+    if [[ -n "$remote" ]]; then
+      if run git push 2>/dev/null; then
+        info "Pushed to remote"
+      else
+        warn "Push failed — check remote connectivity"
+        exit 1
       fi
+    else
+      skip "No remote configured — local commit only"
     fi
   )
 }

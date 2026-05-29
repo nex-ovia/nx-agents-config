@@ -62,6 +62,7 @@ tq()       { echo "$TOML_JSON" | jq -r "$@" 2>/dev/null || true; }
 tool_names()        { tq '.tool[].name // empty'; }
 tool_desc()         { tq ".tool[] | select(.name == \"$1\") | .desc // \"\""; }
 tool_external()     { tq ".tool[] | select(.name == \"$1\") | .external // \"\""; }
+tool_data()         { tq ".tool[] | select(.name == \"$1\") | .data // \"\""; }
 tool_dependencies() { tq ".tool[] | select(.name == \"$1\") | .dependencies[] // empty" 2>/dev/null; }
 tool_exists()       { tq ".tool[] | select(.name == \"$1\") | .name // \"\""; }
 
@@ -77,6 +78,12 @@ tool_file_desc()    { tq ".tool[] | select(.name == \"$1\") | .file[$2].desc // 
 tool_external_file_count() { tq ".tool[] | select(.name == \"$1\") | (.external_file | length) // 0"; }
 tool_external_file_path()  { tq ".tool[] | select(.name == \"$1\") | .external_file[$2].path // \"\""; }
 tool_external_file_desc()  { tq ".tool[] | select(.name == \"$1\") | .external_file[$2].desc // \"\""; }
+
+tool_external_dir_count()      { tq ".tool[] | select(.name == \"$1\") | (.external_dir | length) // 0"; }
+tool_external_dir_path()       { tq ".tool[] | select(.name == \"$1\") | .external_dir[$2].path // \"\""; }
+tool_external_dir_store_path() { tq ".tool[] | select(.name == \"$1\") | .external_dir[$2].store_path // \"\""; }
+tool_external_dir_desc()       { tq ".tool[] | select(.name == \"$1\") | .external_dir[$2].desc // \"\""; }
+tool_external_dir_gitignore()  { tq ".tool[] | select(.name == \"$1\") | .external_dir[$2].gitignore // [] | .[]"; }
 
 tool_internals_display() {
   tq ".tool[] | select(.name == \"$1\") | .internal[] | \"\(.from) → \(.to)  [\(.desc // \"\")]\"" 2>/dev/null

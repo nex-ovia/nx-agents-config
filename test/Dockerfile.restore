@@ -1,0 +1,19 @@
+FROM debian:bookworm-slim
+
+# Minimal restore-only image — no OpenCode, no ollama, no GGUF
+RUN apt-get update && apt-get install -y \
+    bash git python3 jq sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Git identity
+RUN git config --global user.email "test@nx-agents-config" && \
+    git config --global user.name "nx-agents-test"
+
+# Copy repo and build binary
+COPY . /repo
+RUN bash /repo/build.sh /usr/local/bin/nx-agents-config
+
+ENV HOME=/tmp/machine-b-home
+RUN mkdir -p /tmp/machine-b-home
+
+CMD ["bash", "/repo/test/lifecycle-machine-b.sh"]

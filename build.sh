@@ -38,7 +38,7 @@ DEFAULT_TOML_B64=$(base64 < "$ROOT/nx-agents.toml" | tr -d '\n')
     done
 
     # ── Commands ──
-    for cmd in tree setup update sync project tool restoreFromBkp update-tool uninstall; do
+    for cmd in tree setup update sync project tool backup restoreFromBkp restore update-tool uninstall; do
         grep -v '^source ' "$SRC_DIR/commands/${cmd}.sh"
         echo
     done

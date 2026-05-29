@@ -1,0 +1,46 @@
+FROM debian:bookworm-slim
+
+# Core packages
+RUN apt-get update && apt-get install -y \
+    bash git python3 jq curl ca-certificates sqlite3 unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install bun
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:$PATH"
+
+# Install opencode
+RUN bun install -g opencode-ai
+
+# Install ollama
+RUN curl -fsSL https://ollama.ai/install.sh | sh
+
+# GGUF model: place tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf in test/models/ before building.
+# Download: https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF
+COPY test/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf /models/tinyllama.gguf
+
+# Ollama Modelfile
+RUN echo 'FROM /models/tinyllama.gguf' > /models/Modelfile
+
+# Pre-bake model into the ollama store so tests don't need a network pull
+RUN OLLAMA_MODELS=/models/ollama-store ollama serve & \
+    sleep 5 && \
+    OLLAMA_MODELS=/models/ollama-store ollama create tinyllama -f /models/Modelfile && \
+    pkill ollama || true
+
+ENV OLLAMA_MODELS=/models/ollama-store
+
+# Git identity for commits inside container
+RUN git config --global user.email "test@nx-agents-config" && \
+    git config --global user.name "nx-agents-test"
+
+# Copy repo
+COPY . /repo
+
+# Build binary
+RUN bash /repo/build.sh /usr/local/bin/nx-agents-config
+
+ENV HOME=/tmp/machine-a-home
+RUN mkdir -p /tmp/machine-a-home
+
+CMD ["bash", "/repo/test/lifecycle-machine-a.sh"]

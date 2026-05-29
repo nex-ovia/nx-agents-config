@@ -18,16 +18,32 @@ desc = "Reusable instruction/rule files (*.md)"
 path = "shared/memory"
 desc = "Cross-session persistent context store"
 
+[shared.projects]
+path = "shared/projects"
+desc = "Cross-agent project context directories"
+
 [[tool]]
 name = "opencode"
 desc = "OpenCode AI coding assistant"
 external = "~/.config/opencode"
+data = "~/.local/share/opencode"
 dependencies = ["opencode", "bun"]
+
+[[tool.external_dir]]
+path = "~/.local/share/opencode"
+store_path = "userdata"
+desc = "OpenCode sessions database"
+gitignore = ["*.db-shm", "*.db-wal", "log/", "repos/"]
 
 [[tool.internal]]
 from = "skills"
 to = "../shared/skills"
 desc = "Shared skills"
+
+[[tool.internal]]
+from = "shared-projects"
+to = "../shared/projects"
+desc = "Shared project context"
 
 [[tool.file]]
 path = "opencode.json"
@@ -37,12 +53,18 @@ desc = "Global config with model routing"
 name = "claude"
 desc = "Claude Code CLI by Anthropic"
 external = "~/.claude"
+data = "~/.claude"
 dependencies = ["claude"]
 
 [[tool.internal]]
 from = "skills"
 to = "../shared/skills"
 desc = "Shared skills"
+
+[[tool.internal]]
+from = "shared-projects"
+to = "../shared/projects"
+desc = "Shared project context"
 
 [[tool.file]]
 path = "CLAUDE.md"

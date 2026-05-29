@@ -32,6 +32,23 @@ cmd_setup() {
         if [[ -n "$remote_url" ]]; then
           run git -C "$STORE_DIR" remote add origin "$remote_url"
           info "Remote added: $remote_url"
+
+          # If the remote already has commits, offer to restore now
+          local remote_head
+          remote_head=$(git -C "$STORE_DIR" ls-remote origin HEAD 2>/dev/null | cut -f1 || echo "")
+          if [[ -n "$remote_head" ]]; then
+            echo ""
+            echo -n "  Remote has existing store data. Restore it now? [Y/n] "
+            read -r do_restore
+            if [[ -z "$do_restore" || "$do_restore" =~ ^[Yy] ]]; then
+              run git -C "$STORE_DIR" fetch origin
+              local restore_branch
+              restore_branch=$(git -C "$STORE_DIR" ls-remote --heads origin \
+                | head -1 | awk '{print $2}' | sed 's|refs/heads/||')
+              run git -C "$STORE_DIR" checkout -b "$restore_branch" "origin/$restore_branch"
+              info "Restored store from remote (branch: $restore_branch)"
+            fi
+          fi
         fi
       fi
     fi
@@ -111,6 +128,25 @@ EOF
 
     # External symlink (tool config dir → store/toolname/)
     ensure_external_symlink "$tool_dir" "$ext" "$desc"
+
+    # External dirs (additional external paths → store subdir, with .gitignore)
+    local ed_count
+    ed_count=$(tool_external_dir_count "$t")
+    if [[ "$ed_count" != "0" ]]; then
+      for i in $(seq 0 $((ed_count - 1))); do
+        local ed_path ed_sp ed_desc
+        ed_path=$(tool_external_dir_path "$t" "$i")
+        ed_sp=$(tool_external_dir_store_path "$t" "$i")
+        ed_desc=$(tool_external_dir_desc "$t" "$i")
+        local ed_store_subdir="$tool_dir/$ed_sp"
+        local gi_entries=()
+        while IFS= read -r entry; do
+          [[ -n "$entry" ]] && gi_entries+=("$entry")
+        done < <(tool_external_dir_gitignore "$t" "$i")
+        ensure_external_dir_symlink "$ed_store_subdir" "$ed_path" "$ed_desc" \
+          "${gi_entries[@]+"${gi_entries[@]}"}"
+      done
+    fi
 
     # External files (backup to store + symlink)
     local ef_count

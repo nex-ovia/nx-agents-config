@@ -105,6 +105,22 @@ ensure_external_file_symlink() {
   fi
 }
 
+ensure_external_dir_symlink() {
+  local store_subdir="$1" ext_path="$2" desc="$3"
+  shift 3
+
+  ensure_dir "$store_subdir" "$desc (store)"
+
+  if [[ $# -gt 0 ]] && ! ${DRY_RUN:-false}; then
+    local gi_file="$store_subdir/.gitignore"
+    if [[ ! -f "$gi_file" ]]; then
+      printf '%s\n' "$@" > "$gi_file"
+    fi
+  fi
+
+  ensure_external_symlink "$store_subdir" "$ext_path" "$desc"
+}
+
 remove_symlink() {
   local link_path="$1" desc="$2"
   local expanded="${link_path/#\~/$HOME}"
