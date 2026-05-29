@@ -972,7 +972,7 @@ cmd_claude_restore() {
     local rel="$1" label="$2"
     local src="$backup_dir/$rel"
     local dst="$cs/$rel"
-    [[ -d "$src" ]] || return
+    [[ -d "$src" ]] || return 0
     heading "$label"
     run mkdir -p "$dst"
     for item in "$src"/*; do
@@ -992,7 +992,7 @@ cmd_claude_restore() {
     local rel="$1" label="$2"
     local src="$backup_dir/$rel"
     local dst="$cs/$rel"
-    [[ -f "$src" ]] || return
+    [[ -f "$src" ]] || return 0
     heading "$label"
     if [[ -f "$dst" ]]; then
       skip "Already exists: $rel"
