@@ -1,52 +1,36 @@
-# update-tool.sh — Update the nx-agents-config tool from GitHub template
-# Downloads latest tarball, rsyncs over existing files (never touches store/)
+# update-tool.sh — Self-update the nx-agents-config binary from GitHub raw
 
 cmd_update_tool() {
-  heading "Updating nx-agents-config tool..."
-  dim "Tool dir: $REPO_DIR"
-  dim "Store dir: $STORE_DIR"
+  heading "Updating nx-agents-config..."
+  dim "Binary location: $NX_AGENTS_HOME/nx-agents-config"
 
-  for cmd in curl rsync; do
-    if ! command -v "$cmd" &>/dev/null; then
-      err "$cmd is required for update-tool"
-      exit 1
-    fi
-  done
-
-  local tar_url="https://github.com/nex-ovia/nx-agents-config/archive/main.tar.gz"
-  local tmp_dir
-  tmp_dir=$(mktemp -d)
-
-  info "Downloading latest template..."
-  if ! curl -fsSL "$tar_url" | tar xz --strip=1 -C "$tmp_dir" 2>/dev/null; then
-    rm -rf "$tmp_dir"
-    err "Failed to download template. Check your internet connection."
+  if ! command -v curl &>/dev/null; then
+    err "curl is required for update-tool"
     exit 1
   fi
-  info "Downloaded and extracted to temporary directory"
 
-  # Check version
-  local new_version old_version
-  new_version=$(grep -E '^version\s*=' "$tmp_dir/nx-agents.toml" 2>/dev/null | head -1 | sed 's/.*= *"//;s/"$//' || echo "unknown")
-  old_version=$(grep -E '^version\s*=' "$REPO_DIR/nx-agents.toml" 2>/dev/null | head -1 | sed 's/.*= *"//;s/"$//' || echo "unknown")
+  local bin_url="https://raw.githubusercontent.com/nex-ovia/nx-agents-config/main/nx-agents-config"
+  local tmp_file
+  tmp_file=$(mktemp)
 
-  if [[ "$new_version" == "$old_version" ]]; then
-    skip "Already at version $old_version — no update needed"
-    rm -rf "$tmp_dir"
-    return
+  info "Downloading latest binary..."
+  if ! curl -fsSL -o "$tmp_file" "$bin_url"; then
+    rm -f "$tmp_file"
+    err "Failed to download. Check your internet connection."
+    exit 1
   fi
 
-  info "Updating from $old_version → $new_version..."
+  chmod +x "$tmp_file"
 
-  if ${DRY_RUN:-false}; then
-    skip "(would rsync) new template over $REPO_DIR, excluding store/"
-    info "Changes in new version:"
-    diff -rq "$REPO_DIR" "$tmp_dir" 2>/dev/null | grep -v 'Only in.*store/' || skip "No changes detected"
-  else
-    mkdir -p "$REPO_DIR"
-    rsync -a --delete --exclude='/store/' "$tmp_dir/" "$REPO_DIR/"
-    info "Tool updated to version $new_version (store/ data was NOT touched)"
+  local script_path
+  script_path="$(realpath_safe "${BASH_SOURCE[0]}")"
+
+  if ! mv "$tmp_file" "$script_path"; then
+    rm -f "$tmp_file"
+    err "Failed to replace binary at $script_path"
+    exit 1
   fi
 
-  rm -rf "$tmp_dir"
+  info "Updated successfully!"
+  dim "Please re-run nx-agents-config for changes to take effect."
 }

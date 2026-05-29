@@ -65,7 +65,7 @@ EOF
   while IFS= read -r k; do
     local rel_path
     rel_path=$(shared_path "$k")
-    ensure_dir "$REPO_DIR/$rel_path" "shared/$k ($(shared_desc "$k"))"
+    ensure_dir "$NX_AGENTS_HOME/$rel_path" "shared/$k ($(shared_desc "$k"))"
     # Also ensure in store/
     ensure_dir "$STORE_DIR/$rel_path" "store/shared/$k ($(shared_desc "$k"))"
   done < <(shared_keys)
@@ -113,11 +113,12 @@ EOF
     ensure_external_symlink "$tool_dir" "$ext" "$desc"
   done < <(tool_names)
 
-  # 6. CLI symlink
+    # 6. CLI symlink
   heading "CLI entry point"
-  local cli_target="$REPO_DIR/bin/nx-agents-config"
+  local script_path
+  script_path="$(realpath_safe "${BASH_SOURCE[0]}")"
   local cli_link="$HOME/.local/bin/nx-agents-config"
-  ensure_external_symlink "$cli_target" "$cli_link" "CLI binary"
+  ensure_external_symlink "$script_path" "$cli_link" "CLI binary"
 
   if ! echo "$PATH" | tr ':' '\n' | grep -q "$HOME/.local/bin"; then
     dim "  Note: Add ~/.local/bin to your PATH:"

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# nx-agents-config — CLI entry point
-# Resolves REPO_DIR (handles symlinks), sources src/main.sh
+# nx-agents-config — CLI entry point (development mode)
+# Sets NX_AGENTS_HOME to the repo root and sources src/main.sh
 set -euo pipefail
 
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 while [[ -L "$SCRIPT_PATH" ]]; do
   SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
 done
-REPO_DIR="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+NX_AGENTS_HOME="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
 
-source "$REPO_DIR/src/main.sh"
+source "$NX_AGENTS_HOME/src/main.sh"

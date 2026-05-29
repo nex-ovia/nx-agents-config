@@ -1,23 +1,26 @@
 # main.sh — Dispatcher: sources libs/commands, parses args, routes to cmd_*
 
 # Source libraries
-source "$REPO_DIR/src/lib/colors.sh"
-source "$REPO_DIR/src/lib/toml.sh"
-source "$REPO_DIR/src/lib/backup.sh"
-source "$REPO_DIR/src/lib/symlink.sh"
-source "$REPO_DIR/src/lib/util.sh"
+source "$NX_AGENTS_HOME/src/lib/colors.sh"
+source "$NX_AGENTS_HOME/src/lib/toml.sh"
+source "$NX_AGENTS_HOME/src/lib/backup.sh"
+source "$NX_AGENTS_HOME/src/lib/symlink.sh"
+source "$NX_AGENTS_HOME/src/lib/util.sh"
 
 # ---------------------------------------------------------------------------
 # Global state
 # ---------------------------------------------------------------------------
 TIMESTAMP=$(date +%Y-%m-%d.%H%M%S)
 DRY_RUN=false
-TOML="$REPO_DIR/nx-agents.toml"
-STORE_DIR="$REPO_DIR/store"
-REMOVED_DIR="$REPO_DIR/.removed.$TIMESTAMP"
+STORE_DIR="$NX_AGENTS_HOME/store"
+REMOVED_DIR="$NX_AGENTS_HOME/.removed.$TIMESTAMP"
 
 # Parse default + user config, merge
-TOML_JSON_DEFAULT="$(parse_toml "$TOML")"
+if [[ -f "$NX_AGENTS_HOME/nx-agents.toml" ]]; then
+  TOML_JSON_DEFAULT="$(parse_toml "$NX_AGENTS_HOME/nx-agents.toml")"
+else
+  TOML_JSON_DEFAULT="$(parse_toml_stdin <<< "$DEFAULT_TOML")"
+fi
 USER_CONFIG_JSON="$(load_user_config)"
 TOML_JSON="$(merge_configs "$TOML_JSON_DEFAULT" "$USER_CONFIG_JSON")"
 
@@ -25,18 +28,16 @@ TOML_JSON="$(merge_configs "$TOML_JSON_DEFAULT" "$USER_CONFIG_JSON")"
 tq() { echo "$TOML_JSON" | jq -r "$@" 2>/dev/null || true; }
 
 CONFIG_NAME=$(tq '.config.name // "nx-agents-config"')
-CONFIG_REPO=$(tq '.config.repo // "~/.nx-agents-config"')
-CONFIG_HOME=$(tq '.config.home // "~/.nx-agents-config"')
 
 # Source commands
-source "$REPO_DIR/src/commands/tree.sh"
-source "$REPO_DIR/src/commands/setup.sh"
-source "$REPO_DIR/src/commands/update.sh"
-source "$REPO_DIR/src/commands/sync.sh"
-source "$REPO_DIR/src/commands/project.sh"
-source "$REPO_DIR/src/commands/tool.sh"
-source "$REPO_DIR/src/commands/update-tool.sh"
-source "$REPO_DIR/src/commands/uninstall.sh"
+source "$NX_AGENTS_HOME/src/commands/tree.sh"
+source "$NX_AGENTS_HOME/src/commands/setup.sh"
+source "$NX_AGENTS_HOME/src/commands/update.sh"
+source "$NX_AGENTS_HOME/src/commands/sync.sh"
+source "$NX_AGENTS_HOME/src/commands/project.sh"
+source "$NX_AGENTS_HOME/src/commands/tool.sh"
+source "$NX_AGENTS_HOME/src/commands/update-tool.sh"
+source "$NX_AGENTS_HOME/src/commands/uninstall.sh"
 
 # ---------------------------------------------------------------------------
 # Help

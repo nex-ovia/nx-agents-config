@@ -9,7 +9,7 @@ cmd_update() {
   while IFS= read -r k; do
     local rel_path
     rel_path=$(shared_path "$k")
-    ensure_dir "$REPO_DIR/$rel_path" "shared/$k ($(shared_desc "$k"))"
+    ensure_dir "$NX_AGENTS_HOME/$rel_path" "shared/$k ($(shared_desc "$k"))"
     ensure_dir "$STORE_DIR/$rel_path" "store/shared/$k ($(shared_desc "$k"))"
   done < <(shared_keys)
 

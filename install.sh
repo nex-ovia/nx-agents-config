@@ -2,12 +2,12 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/nex-ovia/nx-agents-config"
-TAR_URL="${REPO_URL}/archive/main.tar.gz"
+RAW_URL="${REPO_URL}/raw/main/nx-agents-config"
 INSTALL_DIR="${HOME}/.nx-agents-config"
 CLI_SYMLINK="${HOME}/.local/bin/nx-agents-config"
 
 # ---------------------------------------------------------------------------
-# Colors (self-contained for bootstrap — same scheme as the tool)
+# Colors (self-contained for install)
 # ---------------------------------------------------------------------------
 if [[ -t 1 ]]; then
   if command -v tput &>/dev/null; then
@@ -37,18 +37,14 @@ dim()     { printf "%s%s%s\n" "${DIM}" "$1" "${NC}"; }
 heading() { printf "\n%s%s%s\n" "$BOLD" "$1" "$NC"; }
 
 # ---------------------------------------------------------------------------
-# Parse args
-# ---------------------------------------------------------------------------
 RUN_SETUP=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dir) INSTALL_DIR="$2"; shift 2 ;;
     --setup) RUN_SETUP=true; shift ;;
     --help|-h)
-      echo "Usage: curl -fsSL ${REPO_URL}/raw/main/bootstrap.sh | bash [-s -- [options]]"
+      echo "Usage: curl -fsSL ${REPO_URL}/raw/main/install.sh | bash [-s -- [options]]"
       echo ""
       echo "Options:"
-      echo "  --dir <path>    Install to custom path (default: ~/.nx-agents-config)"
       echo "  --setup         Also run 'nx-agents-config setup' after install"
       echo "  --help          Show this help"
       exit 0
@@ -58,7 +54,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ---------------------------------------------------------------------------
-heading "nx-agents-config — Bootstrap Install"
+heading "nx-agents-config — Install"
 
 # Prerequisites
 heading "Checking prerequisites"
@@ -70,27 +66,21 @@ for cmd in curl python3 jq; do
   fi
 done
 
-# Warn if git is missing (needed later for store/ sync)
 if ! command -v git &>/dev/null; then
   warn "git not found — store/ sync will not work until git is installed"
 fi
 
-# Download template
-heading "Downloading template"
-if [[ -d "$INSTALL_DIR" ]] && [[ -n "$(ls -A "$INSTALL_DIR" 2>/dev/null)" ]]; then
-  warn "Directory already exists and is not empty: $INSTALL_DIR"
-  echo -n "  Overwrite existing files? [y/N] "
-  read -r overwrite
-  if [[ "$overwrite" =~ ^[Yy] ]]; then
-    curl -fsSL "$TAR_URL" | tar xz --strip=1 -C "$INSTALL_DIR"
-    info "Template extracted to $INSTALL_DIR"
-  else
-    skip "Using existing files"
-  fi
+# Download binary
+heading "Downloading binary"
+mkdir -p "$INSTALL_DIR"
+tmp_file=$(mktemp)
+if curl -fsSL -o "$tmp_file" "$RAW_URL"; then
+  chmod +x "$tmp_file"
+  mv "$tmp_file" "$INSTALL_DIR/nx-agents-config"
+  info "Downloaded to $INSTALL_DIR/nx-agents-config"
 else
-  mkdir -p "$INSTALL_DIR"
-  curl -fsSL "$TAR_URL" | tar xz --strip=1 -C "$INSTALL_DIR"
-  info "Template extracted to $INSTALL_DIR"
+  rm -f "$tmp_file"
+  err "Failed to download. Check your internet connection."
 fi
 
 # Create CLI symlink
@@ -98,16 +88,16 @@ heading "Installing CLI"
 mkdir -p "$(dirname "$CLI_SYMLINK")"
 if [[ -L "$CLI_SYMLINK" ]]; then
   current=$(readlink "$CLI_SYMLINK")
-  if [[ "$current" == "$INSTALL_DIR/bin/nx-agents-config" ]]; then
+  if [[ "$current" == "$INSTALL_DIR/nx-agents-config" ]]; then
     info "CLI symlink already correct"
   else
-    ln -sf "$INSTALL_DIR/bin/nx-agents-config" "$CLI_SYMLINK"
+    ln -sf "$INSTALL_DIR/nx-agents-config" "$CLI_SYMLINK"
     link "Updated CLI symlink → $CLI_SYMLINK"
   fi
 elif [[ -f "$CLI_SYMLINK" ]]; then
   err "$CLI_SYMLINK exists but is not a symlink — remove it manually"
 else
-  ln -s "$INSTALL_DIR/bin/nx-agents-config" "$CLI_SYMLINK"
+  ln -s "$INSTALL_DIR/nx-agents-config" "$CLI_SYMLINK"
   link "Created CLI symlink → $CLI_SYMLINK"
 fi
 
@@ -116,23 +106,10 @@ if ! echo "$PATH" | tr ':' '\n' | grep -q "$(dirname "$CLI_SYMLINK")"; then
   dim "  export PATH=\"\$HOME/.local/bin:\$PATH\""
 fi
 
-# Verify TOML
-heading "Verifying configuration"
-if python3 -c "
-import tomllib
-with open('$INSTALL_DIR/nx-agents.toml', 'rb') as f:
-    tomllib.load(f)
-print('  ${ICON_OK} nx-agents.toml is valid')
-" 2>/dev/null; then
-  :
-else
-  warn "nx-agents.toml could not be parsed"
-fi
-
 # Run setup if requested
 if [[ "${RUN_SETUP:-false}" == "true" ]]; then
   heading "Running setup"
-  bash "$INSTALL_DIR/bin/nx-agents-config" setup
+  bash "$INSTALL_DIR/nx-agents-config" setup
 fi
 
 # Next steps
@@ -148,4 +125,4 @@ echo "     ${DIM}nx-agents-config update-tool${NC}"
 echo "  ${CYAN}4.${NC} Sync your store/ data (your private git repo):"
 echo "     ${DIM}nx-agents-config sync${NC}"
 echo "  ${CYAN}5.${NC} Star the repo if you find it useful:"
-echo "     ${DIM}https://github.com/nex-ovia/nx-agents-config${NC}"
+echo "     ${DIM}${REPO_URL}${NC}"

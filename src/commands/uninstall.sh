@@ -29,13 +29,13 @@ cmd_uninstall() {
   # 3. Remove CLI symlink
   remove_symlink "$HOME/.local/bin/nx-agents-config" "CLI binary"
 
-  # 4. Remove REPO_DIR
+  # 4. Remove NX_AGENTS_HOME
   heading "Removing tool directory"
   if ${DRY_RUN:-false}; then
-    skip "(would remove) $REPO_DIR"
+    skip "(would remove) $NX_AGENTS_HOME"
   else
-    run rm -rf "$REPO_DIR"
-    info "Removed: $REPO_DIR"
+    run rm -rf "$NX_AGENTS_HOME"
+    info "Removed: $NX_AGENTS_HOME"
   fi
 
   # 5. Summary
@@ -49,7 +49,7 @@ cmd_uninstall() {
     echo "  To restore:"
     echo "    1. mkdir -p \"$(dirname "$STORE_DIR")\""
     echo "    2. mv ${bak_dir} ${STORE_DIR}"
-    echo "    3. Re-install via bootstrap.sh"
+    echo "    3. Re-install via the install script"
     echo "    4. Run 'nx-agents-config setup'"
   else
     echo "  No store data to restore."

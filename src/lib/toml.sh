@@ -14,6 +14,17 @@ except Exception as e:
 " 2>/dev/null || echo "{}"
 }
 
+parse_toml_stdin() {
+  python3 -c "
+import tomllib, json, sys
+try:
+    print(json.dumps(tomllib.load(sys.stdin.buffer)))
+except Exception as e:
+    print(json.dumps({}), file=sys.stderr)
+    sys.exit(1)
+" 2>/dev/null || echo "{}"
+}
+
 load_user_config() {
   local user_toml="$STORE_DIR/config.toml"
   if [[ -f "$user_toml" ]]; then

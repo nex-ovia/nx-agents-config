@@ -1,5 +1,13 @@
 # util.sh — Shared utility functions
 
+realpath_safe() {
+  local path="$1"
+  while [[ -L "$path" ]]; do
+    path="$(readlink "$path")"
+  done
+  cd "$(dirname "$path")" 2>/dev/null && echo "$(pwd -P)/$(basename "$path")"
+}
+
 run() {
   if ${DRY_RUN:-false}; then
     skip "(would run) $*"

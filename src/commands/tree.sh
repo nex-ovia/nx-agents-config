@@ -4,8 +4,6 @@ cmd_tree() {
   echo ""
   heading "${CONFIG_NAME}/  (~/.nx-agents-config)"
 
-  echo "├── bin/"
-  echo "├── src/"
   echo "├── store/    $(dim '[your data — gitignored, separate git remote]')"
 
   # shared sections
@@ -58,10 +56,9 @@ cmd_tree() {
   done
 
   # repo files
-  echo "├── nx-agents.toml      $(dim '[manifest]')"
-  echo "├── bootstrap.sh        $(dim '[curl install script]')"
-  echo "├── LICENSE             $(dim '[MIT]')"
-  echo "└── README.md           $(dim '[documentation]')"
+  echo "├── nx-agents-config  $(dim '[self-contained binary]')"
+  echo "├── LICENSE           $(dim '[MIT]')"
+  echo "└── README.md         $(dim '[documentation]')"
 
   # external symlinks
   echo ""
@@ -70,5 +67,5 @@ cmd_tree() {
     local ext=$(tool_external "$t")
     echo "  ${ext}  →  store/${t}/"
   done
-  echo "  ~/.local/bin/nx-agents-config  →  bin/nx-agents-config"
+  echo "  ~/.local/bin/nx-agents-config  →  nx-agents-config"
 }
