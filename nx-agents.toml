@@ -1,7 +1,8 @@
 [config]
 name = "nx-agents-config"
-repo = "~/nx-agents-config"
+repo = "~/.nx-agents-config"
 home = "~/.nx-agents-config"
+store = "store"
 license = "MIT"
 version = "1.0.0"
 

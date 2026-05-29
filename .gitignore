@@ -1,14 +1,5 @@
-# Tool-specific auto-generated configs
-claude/projects.json
-claude/projects/
-claude/sessions/
-claude/file-history/
-claude/ide/
-claude/plans/
-claude/telemetry/
-claude/settings.json
-claude/session-env/
-claude/backups/
+# User data store (separate git repo, user controls their remote)
+/store/
 
 # Generated symlinks (created by setup/update)
 opencode/skills
@@ -18,6 +9,13 @@ claude/skills
 # Runtime data
 shared/memory/*
 !shared/memory/.gitkeep
+
+# Claude Desktop runtime cruft
+claude/ide/
+claude/sessions/
+claude/projects/
+claude/*.json
+*.lock
 
 # Build artifacts
 opencode/**/node_modules/
@@ -29,5 +27,4 @@ opencode/**/node_modules/
 *.swo
 
 # Empty dir placeholders (we use .gitkeep convention)
-# But keep the .gitkeep files themselves
 !.gitkeep
