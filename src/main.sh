@@ -55,7 +55,7 @@ ${BOLD}Commands:${NC}
   project add <name>    Add a new project
   project list          List projects
   tool add <name>       Scaffold a new tool in store/config.toml
-  update-tool           Update nx-agents-config tool (git pull)
+  update-tool           Update nx-agents-config tool (download template)
   uninstall             Backup store + remove everything
 
 ${BOLD}Options:${NC}

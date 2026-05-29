@@ -2,6 +2,7 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/nex-ovia/nx-agents-config"
+TAR_URL="${REPO_URL}/archive/main.tar.gz"
 INSTALL_DIR="${HOME}/.nx-agents-config"
 CLI_SYMLINK="${HOME}/.local/bin/nx-agents-config"
 
@@ -61,7 +62,7 @@ heading "nx-agents-config — Bootstrap Install"
 
 # Prerequisites
 heading "Checking prerequisites"
-for cmd in git python3 jq; do
+for cmd in curl python3 jq; do
   if command -v "$cmd" &>/dev/null; then
     info "$cmd found: $(command -v "$cmd")"
   else
@@ -69,19 +70,27 @@ for cmd in git python3 jq; do
   fi
 done
 
-# Clone into hidden dir
-heading "Cloning repository"
-if [[ -d "$INSTALL_DIR" ]]; then
-  warn "Directory already exists: $INSTALL_DIR"
-  if [[ -d "$INSTALL_DIR/.git" ]]; then
-    info "Existing git repo found — pulling latest"
-    (cd "$INSTALL_DIR" && git pull --ff-only)
+# Warn if git is missing (needed later for store/ sync)
+if ! command -v git &>/dev/null; then
+  warn "git not found — store/ sync will not work until git is installed"
+fi
+
+# Download template
+heading "Downloading template"
+if [[ -d "$INSTALL_DIR" ]] && [[ -n "$(ls -A "$INSTALL_DIR" 2>/dev/null)" ]]; then
+  warn "Directory already exists and is not empty: $INSTALL_DIR"
+  echo -n "  Overwrite existing files? [y/N] "
+  read -r overwrite
+  if [[ "$overwrite" =~ ^[Yy] ]]; then
+    curl -fsSL "$TAR_URL" | tar xz --strip=1 -C "$INSTALL_DIR"
+    info "Template extracted to $INSTALL_DIR"
   else
-    err "Not a git repo — remove $INSTALL_DIR and re-run for a fresh install."
+    skip "Using existing files"
   fi
 else
-  git clone --depth 1 "$REPO_URL" "$INSTALL_DIR"
-  info "Cloned to $INSTALL_DIR"
+  mkdir -p "$INSTALL_DIR"
+  curl -fsSL "$TAR_URL" | tar xz --strip=1 -C "$INSTALL_DIR"
+  info "Template extracted to $INSTALL_DIR"
 fi
 
 # Create CLI symlink
