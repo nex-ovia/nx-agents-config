@@ -74,11 +74,18 @@ tool_file_count()   { tq ".tool[] | select(.name == \"$1\") | (.file | length) /
 tool_file_path()    { tq ".tool[] | select(.name == \"$1\") | .file[$2].path // \"\""; }
 tool_file_desc()    { tq ".tool[] | select(.name == \"$1\") | .file[$2].desc // \"\""; }
 
+tool_external_file_count() { tq ".tool[] | select(.name == \"$1\") | (.external_file | length) // 0"; }
+tool_external_file_path()  { tq ".tool[] | select(.name == \"$1\") | .external_file[$2].path // \"\""; }
+tool_external_file_desc()  { tq ".tool[] | select(.name == \"$1\") | .external_file[$2].desc // \"\""; }
+
 tool_internals_display() {
   tq ".tool[] | select(.name == \"$1\") | .internal[] | \"\(.from) → \(.to)  [\(.desc // \"\")]\"" 2>/dev/null
 }
 tool_files_display() {
   tq ".tool[] | select(.name == \"$1\") | .file[] | \"\(.path)  [\(.desc // \"\")]\"" 2>/dev/null
+}
+tool_external_files_display() {
+  tq ".tool[] | select(.name == \"$1\") | .external_file[] | \"\(.path)  [\(.desc // \"\")]\"" 2>/dev/null
 }
 tool_deps_display() {
   local deps=$(tq ".tool[] | select(.name == \"$1\") | .dependencies | join(\", \") // empty" 2>/dev/null)

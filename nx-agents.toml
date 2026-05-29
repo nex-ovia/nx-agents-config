@@ -47,3 +47,7 @@ desc = "Shared skills"
 [[tool.file]]
 path = "CLAUDE.md"
 desc = "Instructions pointing to shared resources"
+
+[[tool.external_file]]
+path = "~/.claude.json"
+desc = "Claude global config file"

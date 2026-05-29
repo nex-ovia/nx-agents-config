@@ -72,6 +72,39 @@ ensure_external_symlink() {
   fi
 }
 
+ensure_external_file_symlink() {
+  local target="$1" link_path="$2" desc="$3"
+  local expanded_link="${link_path/#\~/$HOME}"
+  local expanded_target="${target/#\~/$HOME}"
+
+  if [[ -L "$expanded_link" ]]; then
+    local current
+    current=$(readlink "$expanded_link")
+    if [[ "$current" == "$expanded_target" ]]; then
+      skip "External file symlink already correct: $desc"
+      return
+    fi
+    run rm "$expanded_link"
+    link "Replaced external file symlink: $desc"
+  elif [[ -f "$expanded_link" ]]; then
+    if ${DRY_RUN:-false}; then
+      skip "(would copy to store and symlink) $expanded_link"
+    else
+      mkdir -p "$(dirname "$expanded_target")"
+      cp "$expanded_link" "$expanded_target"
+      info "Backed up $desc to store"
+      rm "$expanded_link"
+    fi
+  fi
+
+  if ! ${DRY_RUN:-false}; then
+    mkdir -p "$(dirname "$expanded_link")"
+    mkdir -p "$(dirname "$expanded_target")"
+    ln -s "$expanded_target" "$expanded_link"
+    link "External file symlink: $desc ($expanded_link)"
+  fi
+}
+
 remove_symlink() {
   local link_path="$1" desc="$2"
   local expanded="${link_path/#\~/$HOME}"

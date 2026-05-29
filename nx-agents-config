@@ -7,7 +7,7 @@ set -euo pipefail
 NX_AGENTS_HOME="${HOME}/.nx-agents-config"
 
 # Embedded default TOML (base64 encoded)
-DEFAULT_TOML_B64='W2NvbmZpZ10KbmFtZSA9ICJueC1hZ2VudHMtY29uZmlnIgpyZXBvID0gIn4vLm54LWFnZW50cy1jb25maWciCmhvbWUgPSAifi8ubngtYWdlbnRzLWNvbmZpZyIKc3RvcmUgPSAic3RvcmUiCmxpY2Vuc2UgPSAiTUlUIgp2ZXJzaW9uID0gIjEuMC4wIgoKW3NoYXJlZC5za2lsbHNdCnBhdGggPSAic2hhcmVkL3NraWxscyIKZGVzYyA9ICJBZ2VudCBza2lsbCBkZWZpbml0aW9ucyAoPG5hbWU+L1NLSUxMLm1kKSIKCltzaGFyZWQucnVsZXNdCnBhdGggPSAic2hhcmVkL3J1bGVzIgpkZXNjID0gIlJldXNhYmxlIGluc3RydWN0aW9uL3J1bGUgZmlsZXMgKCoubWQpIgoKW3NoYXJlZC5tZW1vcnldCnBhdGggPSAic2hhcmVkL21lbW9yeSIKZGVzYyA9ICJDcm9zcy1zZXNzaW9uIHBlcnNpc3RlbnQgY29udGV4dCBzdG9yZSIKCltbdG9vbF1dCm5hbWUgPSAib3BlbmNvZGUiCmRlc2MgPSAiT3BlbkNvZGUgQUkgY29kaW5nIGFzc2lzdGFudCIKZXh0ZXJuYWwgPSAifi8uY29uZmlnL29wZW5jb2RlIgpkZXBlbmRlbmNpZXMgPSBbIm9wZW5jb2RlIiwgImJ1biJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIm9wZW5jb2RlLmpzb24iCmRlc2MgPSAiR2xvYmFsIGNvbmZpZyB3aXRoIG1vZGVsIHJvdXRpbmciCgpbW3Rvb2xdXQpuYW1lID0gImNsYXVkZSIKZGVzYyA9ICJDbGF1ZGUgQ29kZSBDTEkgYnkgQW50aHJvcGljIgpleHRlcm5hbCA9ICJ+Ly5jbGF1ZGUiCmRlcGVuZGVuY2llcyA9IFsiY2xhdWRlIl0KCltbdG9vbC5pbnRlcm5hbF1dCmZyb20gPSAic2tpbGxzIgp0byA9ICIuLi9zaGFyZWQvc2tpbGxzIgpkZXNjID0gIlNoYXJlZCBza2lsbHMiCgpbW3Rvb2wuZmlsZV1dCnBhdGggPSAiQ0xBVURFLm1kIgpkZXNjID0gIkluc3RydWN0aW9ucyBwb2ludGluZyB0byBzaGFyZWQgcmVzb3VyY2VzIgo='
+DEFAULT_TOML_B64='W2NvbmZpZ10KbmFtZSA9ICJueC1hZ2VudHMtY29uZmlnIgpyZXBvID0gIn4vLm54LWFnZW50cy1jb25maWciCmhvbWUgPSAifi8ubngtYWdlbnRzLWNvbmZpZyIKc3RvcmUgPSAic3RvcmUiCmxpY2Vuc2UgPSAiTUlUIgp2ZXJzaW9uID0gIjEuMC4wIgoKW3NoYXJlZC5za2lsbHNdCnBhdGggPSAic2hhcmVkL3NraWxscyIKZGVzYyA9ICJBZ2VudCBza2lsbCBkZWZpbml0aW9ucyAoPG5hbWU+L1NLSUxMLm1kKSIKCltzaGFyZWQucnVsZXNdCnBhdGggPSAic2hhcmVkL3J1bGVzIgpkZXNjID0gIlJldXNhYmxlIGluc3RydWN0aW9uL3J1bGUgZmlsZXMgKCoubWQpIgoKW3NoYXJlZC5tZW1vcnldCnBhdGggPSAic2hhcmVkL21lbW9yeSIKZGVzYyA9ICJDcm9zcy1zZXNzaW9uIHBlcnNpc3RlbnQgY29udGV4dCBzdG9yZSIKCltbdG9vbF1dCm5hbWUgPSAib3BlbmNvZGUiCmRlc2MgPSAiT3BlbkNvZGUgQUkgY29kaW5nIGFzc2lzdGFudCIKZXh0ZXJuYWwgPSAifi8uY29uZmlnL29wZW5jb2RlIgpkZXBlbmRlbmNpZXMgPSBbIm9wZW5jb2RlIiwgImJ1biJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIm9wZW5jb2RlLmpzb24iCmRlc2MgPSAiR2xvYmFsIGNvbmZpZyB3aXRoIG1vZGVsIHJvdXRpbmciCgpbW3Rvb2xdXQpuYW1lID0gImNsYXVkZSIKZGVzYyA9ICJDbGF1ZGUgQ29kZSBDTEkgYnkgQW50aHJvcGljIgpleHRlcm5hbCA9ICJ+Ly5jbGF1ZGUiCmRlcGVuZGVuY2llcyA9IFsiY2xhdWRlIl0KCltbdG9vbC5pbnRlcm5hbF1dCmZyb20gPSAic2tpbGxzIgp0byA9ICIuLi9zaGFyZWQvc2tpbGxzIgpkZXNjID0gIlNoYXJlZCBza2lsbHMiCgpbW3Rvb2wuZmlsZV1dCnBhdGggPSAiQ0xBVURFLm1kIgpkZXNjID0gIkluc3RydWN0aW9ucyBwb2ludGluZyB0byBzaGFyZWQgcmVzb3VyY2VzIgoKW1t0b29sLmV4dGVybmFsX2ZpbGVdXQpwYXRoID0gIn4vLmNsYXVkZS5qc29uIgpkZXNjID0gIkNsYXVkZSBnbG9iYWwgY29uZmlnIGZpbGUiCg=='
 
 # Decode embedded default TOML
 DEFAULT_TOML=$(python3 -c "import base64,sys; sys.stdout.write(base64.b64decode(sys.argv[1]).decode())" "$DEFAULT_TOML_B64" 2>/dev/null || printf "")
@@ -127,11 +127,18 @@ tool_file_count()   { tq ".tool[] | select(.name == \"$1\") | (.file | length) /
 tool_file_path()    { tq ".tool[] | select(.name == \"$1\") | .file[$2].path // \"\""; }
 tool_file_desc()    { tq ".tool[] | select(.name == \"$1\") | .file[$2].desc // \"\""; }
 
+tool_external_file_count() { tq ".tool[] | select(.name == \"$1\") | (.external_file | length) // 0"; }
+tool_external_file_path()  { tq ".tool[] | select(.name == \"$1\") | .external_file[$2].path // \"\""; }
+tool_external_file_desc()  { tq ".tool[] | select(.name == \"$1\") | .external_file[$2].desc // \"\""; }
+
 tool_internals_display() {
   tq ".tool[] | select(.name == \"$1\") | .internal[] | \"\(.from) → \(.to)  [\(.desc // \"\")]\"" 2>/dev/null
 }
 tool_files_display() {
   tq ".tool[] | select(.name == \"$1\") | .file[] | \"\(.path)  [\(.desc // \"\")]\"" 2>/dev/null
+}
+tool_external_files_display() {
+  tq ".tool[] | select(.name == \"$1\") | .external_file[] | \"\(.path)  [\(.desc // \"\")]\"" 2>/dev/null
 }
 tool_deps_display() {
   local deps=$(tq ".tool[] | select(.name == \"$1\") | .dependencies | join(\", \") // empty" 2>/dev/null)
@@ -260,6 +267,39 @@ ensure_external_symlink() {
   fi
 }
 
+ensure_external_file_symlink() {
+  local target="$1" link_path="$2" desc="$3"
+  local expanded_link="${link_path/#\~/$HOME}"
+  local expanded_target="${target/#\~/$HOME}"
+
+  if [[ -L "$expanded_link" ]]; then
+    local current
+    current=$(readlink "$expanded_link")
+    if [[ "$current" == "$expanded_target" ]]; then
+      skip "External file symlink already correct: $desc"
+      return
+    fi
+    run rm "$expanded_link"
+    link "Replaced external file symlink: $desc"
+  elif [[ -f "$expanded_link" ]]; then
+    if ${DRY_RUN:-false}; then
+      skip "(would copy to store and symlink) $expanded_link"
+    else
+      mkdir -p "$(dirname "$expanded_target")"
+      cp "$expanded_link" "$expanded_target"
+      info "Backed up $desc to store"
+      rm "$expanded_link"
+    fi
+  fi
+
+  if ! ${DRY_RUN:-false}; then
+    mkdir -p "$(dirname "$expanded_link")"
+    mkdir -p "$(dirname "$expanded_target")"
+    ln -s "$expanded_target" "$expanded_link"
+    link "External file symlink: $desc ($expanded_link)"
+  fi
+}
+
 remove_symlink() {
   local link_path="$1" desc="$2"
   local expanded="${link_path/#\~/$HOME}"
@@ -340,7 +380,11 @@ cmd_tree() {
     $is_last && tbranch="└──"
     echo "$tbranch ${t}/           $(dim "${desc}  (→ ${ext})")"
 
-    # sub-items (internal symlinks + files + dependencies)
+    # external files
+    local efls=()
+    while IFS= read -r line; do efls+=("$line"); done < <(tool_external_files_display "$t" 2>/dev/null || true)
+
+    # sub-items (internal symlinks + files + external files + dependencies)
     local ints=()
     while IFS= read -r line; do ints+=("$line"); done < <(tool_internals_display "$t" 2>/dev/null || true)
     local fls=()
@@ -348,7 +392,7 @@ cmd_tree() {
     local deps_line
     deps_line=$(tool_deps_display "$t" 2>/dev/null || true)
 
-    local sub_items=("${ints[@]}" "${fls[@]}")
+    local sub_items=("${ints[@]}" "${fls[@]}" "${efls[@]}")
     [[ -n "$deps_line" ]] && sub_items+=("$deps_line")
     local s_last=$((${#sub_items[@]} - 1))
     for si in "${!sub_items[@]}"; do
@@ -490,6 +534,20 @@ EOF
 
     # External symlink (tool config dir → store/toolname/)
     ensure_external_symlink "$tool_dir" "$ext" "$desc"
+
+    # External files (backup to store + symlink)
+    local ef_count
+    ef_count=$(tool_external_file_count "$t")
+    if [[ "$ef_count" != "0" ]]; then
+      for i in $(seq 0 $((ef_count - 1))); do
+        local ef_path ef_desc store_path store_name
+        ef_path=$(tool_external_file_path "$t" "$i")
+        ef_desc=$(tool_external_file_desc "$t" "$i")
+        store_name=$(basename "${ef_path/#\~/$HOME}")
+        store_path="$tool_dir/$store_name"
+        ensure_external_file_symlink "$store_path" "$ef_path" "$ef_desc"
+      done
+    fi
   done < <(tool_names)
 
     # 6. CLI symlink
@@ -564,6 +622,20 @@ cmd_update() {
 
     # External symlink
     ensure_external_symlink "$tool_dir" "$ext" "$desc"
+
+    # External files
+    local ef_count
+    ef_count=$(tool_external_file_count "$t")
+    if [[ "$ef_count" != "0" ]]; then
+      for i in $(seq 0 $((ef_count - 1))); do
+        local ef_path ef_desc store_path store_name
+        ef_path=$(tool_external_file_path "$t" "$i")
+        ef_desc=$(tool_external_file_desc "$t" "$i")
+        store_name=$(basename "${ef_path/#\~/$HOME}")
+        store_path="$tool_dir/$store_name"
+        ensure_external_file_symlink "$store_path" "$ef_path" "$ef_desc"
+      done
+    fi
   done < <(tool_names)
 
   # 3. Orphan detection — store/ subdirs not in TOML
@@ -854,6 +926,143 @@ cmd_tool() {
   esac
 }
 
+# claude.sh — Claude-specific operations
+
+cmd_claude() {
+  local subcmd="${1:-help}"
+  shift 2>/dev/null || true
+
+  case "$subcmd" in
+    restore) cmd_claude_restore "$@" ;;
+    help|--help|-h|"")
+      cat <<EOF
+Usage: nx-agents-config claude <command>
+
+Commands:
+  restore          Restore Claude data from backup into store/
+EOF
+      ;;
+    *)
+      err "Unknown claude command: $subcmd"
+      echo "Usage: nx-agents-config claude help"
+      exit 1
+      ;;
+  esac
+}
+
+cmd_claude_restore() {
+  local backup_dir=""
+  for d in "$HOME"/.claude.bak.*/; do
+    [[ -d "$d" ]] && backup_dir="$d"
+  done
+
+  if [[ -z "$backup_dir" ]]; then
+    err "No backup found at ~/.claude.bak.*/"
+    exit 1
+  fi
+
+  heading "Restoring Claude data from backup"
+  dim "Backup: $backup_dir"
+  dim "Store:  $STORE_DIR/claude/"
+
+  local cs="$STORE_DIR/claude"
+
+  # Restore subdirectory from backup into store
+  restore_dir() {
+    local rel="$1" label="$2"
+    local src="$backup_dir/$rel"
+    local dst="$cs/$rel"
+    [[ -d "$src" ]] || return
+    heading "$label"
+    run mkdir -p "$dst"
+    for item in "$src"/*; do
+      [[ -e "$item" ]] || continue
+      local base
+      base=$(basename "$item")
+      if [[ -e "$dst/$base" ]]; then
+        skip "Already exists: $rel/$base"
+      else
+        run cp -a "$item" "$dst/$base"
+        info "Restored: $rel/$base"
+      fi
+    done
+  }
+
+  restore_file_if() {
+    local rel="$1" label="$2"
+    local src="$backup_dir/$rel"
+    local dst="$cs/$rel"
+    [[ -f "$src" ]] || return
+    heading "$label"
+    if [[ -f "$dst" ]]; then
+      skip "Already exists: $rel"
+    else
+      run cp "$src" "$dst"
+      info "Restored: $rel"
+    fi
+  }
+
+  restore_dir "projects" "Projects"
+  restore_dir "sessions" "Sessions"
+  restore_dir "file-history" "File history"
+  restore_dir "plans" "Plans"
+  restore_dir "backups" "Config backups"
+  restore_dir "ide" "IDE config"
+  restore_dir "shell-snapshots" "Shell snapshots"
+  restore_file_if "settings.json" "Settings"
+  restore_file_if "CLAUDE.md" "CLAUDE.md"
+
+  # Handle ~/.claude.json
+  heading "Claude config (.claude.json)"
+  local json_src="$HOME/.claude.json"
+  local json_dst="$cs/.claude.json"
+
+  if [[ -L "$json_src" ]]; then
+    local current
+    current=$(readlink "$json_src")
+    if [[ "$current" == "$json_dst" ]]; then
+      skip ".claude.json symlink already correct"
+    else
+      warn ".claude.json symlink points elsewhere: $current"
+    fi
+  elif [[ -f "$json_src" ]]; then
+    if ${DRY_RUN:-false}; then
+      skip "(would backup .claude.json to store and symlink)"
+    else
+      cp "$json_src" "$json_dst"
+      info "Backed up .claude.json to store"
+      rm "$json_src"
+      ln -s "$json_dst" "$json_src"
+      link "Symlinked .claude.json -> store"
+    fi
+  else
+    if ! ${DRY_RUN:-false}; then
+      echo "{}" > "$json_dst"
+      ln -s "$json_dst" "$json_src"
+      info "Created empty .claude.json in store with symlink"
+    fi
+  fi
+
+  # Offer to commit
+  if [[ -d "$STORE_DIR/.git" ]]; then
+    echo ""
+    echo -n "  Commit restored data to store? [y/N] "
+    read -r do_commit
+    if [[ "$do_commit" =~ ^[Yy] ]]; then
+      echo -n "  Commit message: "
+      read -r msg
+      msg="${msg:-Restore Claude data from backup}"
+      run git -C "$STORE_DIR" add -A
+      run git -C "$STORE_DIR" commit -m "$msg"
+      info "Committed restored data"
+    fi
+  fi
+
+  echo ""
+  info "Restore complete!"
+  dim "Restart Claude or reload VSCode to pick up restored sessions."
+}
+
 # update-tool.sh — Self-update the nx-agents-config binary from GitHub raw
 
 cmd_update_tool() {
@@ -917,6 +1126,18 @@ cmd_uninstall() {
     local ext
     ext=$(tool_external "$t")
     remove_symlink "$ext" "$(tool_desc "$t")"
+
+    # Remove external file symlinks
+    local ef_count
+    ef_count=$(tool_external_file_count "$t")
+    if [[ "$ef_count" != "0" ]]; then
+      for i in $(seq 0 $((ef_count - 1))); do
+        local ef_path ef_desc
+        ef_path=$(tool_external_file_path "$t" "$i")
+        ef_desc=$(tool_external_file_desc "$t" "$i")
+        remove_symlink "$ef_path" "$ef_desc"
+      done
+    fi
   done < <(tool_names)
 
   # 3. Remove CLI symlink
@@ -994,6 +1215,7 @@ ${BOLD}Commands:${NC}
   project add <name>    Add a new project
   project list          List projects
   tool add <name>       Scaffold a new tool in store/config.toml
+  claude restore        Restore Claude data from backup into store/
   update-tool           Update nx-agents-config tool (download template)
   uninstall             Backup store + remove everything
 
@@ -1031,6 +1253,10 @@ case "${1:-help}" in
   sync) shift; cmd_sync "$@" ;;
   update-tool) shift; cmd_update_tool "$@" ;;
   uninstall) shift; cmd_uninstall "$@" ;;
+  claude)
+    shift
+    cmd_claude "$@"
+    ;;
   project)
     shift
     cmd_project "$@"

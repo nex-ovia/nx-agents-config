@@ -33,7 +33,11 @@ cmd_tree() {
     $is_last && tbranch="└──"
     echo "$tbranch ${t}/           $(dim "${desc}  (→ ${ext})")"
 
-    # sub-items (internal symlinks + files + dependencies)
+    # external files
+    local efls=()
+    while IFS= read -r line; do efls+=("$line"); done < <(tool_external_files_display "$t" 2>/dev/null || true)
+
+    # sub-items (internal symlinks + files + external files + dependencies)
     local ints=()
     while IFS= read -r line; do ints+=("$line"); done < <(tool_internals_display "$t" 2>/dev/null || true)
     local fls=()
@@ -41,7 +45,7 @@ cmd_tree() {
     local deps_line
     deps_line=$(tool_deps_display "$t" 2>/dev/null || true)
 
-    local sub_items=("${ints[@]}" "${fls[@]}")
+    local sub_items=("${ints[@]}" "${fls[@]}" "${efls[@]}")
     [[ -n "$deps_line" ]] && sub_items+=("$deps_line")
     local s_last=$((${#sub_items[@]} - 1))
     for si in "${!sub_items[@]}"; do

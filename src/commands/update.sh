@@ -53,6 +53,20 @@ cmd_update() {
 
     # External symlink
     ensure_external_symlink "$tool_dir" "$ext" "$desc"
+
+    # External files
+    local ef_count
+    ef_count=$(tool_external_file_count "$t")
+    if [[ "$ef_count" != "0" ]]; then
+      for i in $(seq 0 $((ef_count - 1))); do
+        local ef_path ef_desc store_path store_name
+        ef_path=$(tool_external_file_path "$t" "$i")
+        ef_desc=$(tool_external_file_desc "$t" "$i")
+        store_name=$(basename "${ef_path/#\~/$HOME}")
+        store_path="$tool_dir/$store_name"
+        ensure_external_file_symlink "$store_path" "$ef_path" "$ef_desc"
+      done
+    fi
   done < <(tool_names)
 
   # 3. Orphan detection — store/ subdirs not in TOML

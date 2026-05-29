@@ -24,6 +24,18 @@ cmd_uninstall() {
     local ext
     ext=$(tool_external "$t")
     remove_symlink "$ext" "$(tool_desc "$t")"
+
+    # Remove external file symlinks
+    local ef_count
+    ef_count=$(tool_external_file_count "$t")
+    if [[ "$ef_count" != "0" ]]; then
+      for i in $(seq 0 $((ef_count - 1))); do
+        local ef_path ef_desc
+        ef_path=$(tool_external_file_path "$t" "$i")
+        ef_desc=$(tool_external_file_desc "$t" "$i")
+        remove_symlink "$ef_path" "$ef_desc"
+      done
+    fi
   done < <(tool_names)
 
   # 3. Remove CLI symlink
