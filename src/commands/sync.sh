@@ -35,16 +35,17 @@ cmd_sync() {
       skip "Working tree clean — nothing to commit"
     fi
 
-    # Fetch and fast-forward pull if behind
+    # Pull with rebase to handle both fast-forward and diverged histories
     if [[ -n "$remote" ]]; then
       git fetch --quiet origin 2>/dev/null || true
       local behind
       behind=$(git rev-list --count HEAD..@{u} 2>/dev/null || echo "0")
       if [[ "$behind" != "0" ]]; then
-        if git pull --ff-only --quiet 2>/dev/null; then
+        if git rebase --quiet origin/HEAD 2>/dev/null; then
           info "Pulled $behind commit(s) from remote"
         else
-          err "Cannot fast-forward: remote has diverged. Resolve manually:"
+          git rebase --abort 2>/dev/null || true
+          err "Rebase conflict — resolve manually then sync again:"
           err "  cd $STORE_DIR && git pull --rebase"
           exit 1
         fi
