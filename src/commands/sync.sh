@@ -22,23 +22,7 @@ cmd_sync() {
     local remote
     remote=$(git remote 2>/dev/null | head -1 || echo "")
 
-    # Fetch and fast-forward pull if behind
-    if [[ -n "$remote" ]]; then
-      git fetch --quiet origin 2>/dev/null || true
-      local behind
-      behind=$(git rev-list --count HEAD..@{u} 2>/dev/null || echo "0")
-      if [[ "$behind" != "0" ]]; then
-        if git pull --ff-only --quiet 2>/dev/null; then
-          info "Pulled $behind commit(s) from remote"
-        else
-          err "Cannot fast-forward: remote has diverged. Resolve manually:"
-          err "  cd $STORE_DIR && git pull"
-          exit 1
-        fi
-      fi
-    fi
-
-    # Commit if there are changes
+    # Commit local changes first so pull sees a clean tree
     local has_changes
     has_changes=$(git status --porcelain 2>/dev/null || true)
     if [[ -n "$has_changes" ]]; then
@@ -49,6 +33,22 @@ cmd_sync() {
       info "Committed: $commit_msg"
     else
       skip "Working tree clean — nothing to commit"
+    fi
+
+    # Fetch and fast-forward pull if behind
+    if [[ -n "$remote" ]]; then
+      git fetch --quiet origin 2>/dev/null || true
+      local behind
+      behind=$(git rev-list --count HEAD..@{u} 2>/dev/null || echo "0")
+      if [[ "$behind" != "0" ]]; then
+        if git pull --ff-only --quiet 2>/dev/null; then
+          info "Pulled $behind commit(s) from remote"
+        else
+          err "Cannot fast-forward: remote has diverged. Resolve manually:"
+          err "  cd $STORE_DIR && git pull --rebase"
+          exit 1
+        fi
+      fi
     fi
 
     # Push if remote configured
