@@ -7,7 +7,7 @@ set -euo pipefail
 NX_AGENTS_HOME="${HOME}/.nx-agents-config"
 
 # Embedded default TOML (base64 encoded)
-DEFAULT_TOML_B64='W2NvbmZpZ10KbmFtZSA9ICJueC1hZ2VudHMtY29uZmlnIgpyZXBvID0gIn4vLm54LWFnZW50cy1jb25maWciCmhvbWUgPSAifi8ubngtYWdlbnRzLWNvbmZpZyIKc3RvcmUgPSAic3RvcmUiCmxpY2Vuc2UgPSAiTUlUIgp2ZXJzaW9uID0gIjEuMC4wIgoKW3NoYXJlZC5za2lsbHNdCnBhdGggPSAic2hhcmVkL3NraWxscyIKZGVzYyA9ICJBZ2VudCBza2lsbCBkZWZpbml0aW9ucyAoPG5hbWU+L1NLSUxMLm1kKSIKCltzaGFyZWQucnVsZXNdCnBhdGggPSAic2hhcmVkL3J1bGVzIgpkZXNjID0gIlJldXNhYmxlIGluc3RydWN0aW9uL3J1bGUgZmlsZXMgKCoubWQpIgoKW3NoYXJlZC5tZW1vcnldCnBhdGggPSAic2hhcmVkL21lbW9yeSIKZGVzYyA9ICJDcm9zcy1zZXNzaW9uIHBlcnNpc3RlbnQgY29udGV4dCBzdG9yZSIKCltzaGFyZWQucHJvamVjdHNdCnBhdGggPSAic2hhcmVkL3Byb2plY3RzIgpkZXNjID0gIkNyb3NzLWFnZW50IHByb2plY3QgY29udGV4dCBkaXJlY3RvcmllcyIKCltbdG9vbF1dCm5hbWUgPSAib3BlbmNvZGUiCmRlc2MgPSAiT3BlbkNvZGUgQUkgY29kaW5nIGFzc2lzdGFudCIKZXh0ZXJuYWwgPSAifi8uY29uZmlnL29wZW5jb2RlIgpkYXRhID0gIn4vLmxvY2FsL3NoYXJlL29wZW5jb2RlIgpkZXBlbmRlbmNpZXMgPSBbIm9wZW5jb2RlIiwgImJ1biJdCgpbW3Rvb2wuZXh0ZXJuYWxfZGlyXV0KcGF0aCA9ICJ+Ly5sb2NhbC9zaGFyZS9vcGVuY29kZSIKc3RvcmVfcGF0aCA9ICJ1c2VyZGF0YSIKZGVzYyA9ICJPcGVuQ29kZSBzZXNzaW9ucyBkYXRhYmFzZSIKZ2l0aWdub3JlID0gWyIqLmRiLXNobSIsICIqLmRiLXdhbCIsICJsb2cvIiwgInJlcG9zLyIsICJiaW4vIiwgInN0b3JhZ2UvIiwgInRvb2wtb3V0cHV0LyJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmludGVybmFsXV0KZnJvbSA9ICJzaGFyZWQtcHJvamVjdHMiCnRvID0gIi4uL3NoYXJlZC9wcm9qZWN0cyIKZGVzYyA9ICJTaGFyZWQgcHJvamVjdCBjb250ZXh0IgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIm9wZW5jb2RlLmpzb24iCmRlc2MgPSAiR2xvYmFsIGNvbmZpZyB3aXRoIG1vZGVsIHJvdXRpbmciCgpbW3Rvb2xdXQpuYW1lID0gImNsYXVkZSIKZGVzYyA9ICJDbGF1ZGUgQ29kZSBDTEkgYnkgQW50aHJvcGljIgpleHRlcm5hbCA9ICJ+Ly5jbGF1ZGUiCmRhdGEgPSAifi8uY2xhdWRlIgpkZXBlbmRlbmNpZXMgPSBbImNsYXVkZSJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmludGVybmFsXV0KZnJvbSA9ICJzaGFyZWQtcHJvamVjdHMiCnRvID0gIi4uL3NoYXJlZC9wcm9qZWN0cyIKZGVzYyA9ICJTaGFyZWQgcHJvamVjdCBjb250ZXh0IgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIkNMQVVERS5tZCIKZGVzYyA9ICJJbnN0cnVjdGlvbnMgcG9pbnRpbmcgdG8gc2hhcmVkIHJlc291cmNlcyIKCltbdG9vbC5leHRlcm5hbF9maWxlXV0KcGF0aCA9ICJ+Ly5jbGF1ZGUuanNvbiIKZGVzYyA9ICJDbGF1ZGUgZ2xvYmFsIGNvbmZpZyBmaWxlIgo='
+DEFAULT_TOML_B64='W2NvbmZpZ10KbmFtZSA9ICJueC1hZ2VudHMtY29uZmlnIgpyZXBvID0gIn4vLm54LWFnZW50cy1jb25maWciCmhvbWUgPSAifi8ubngtYWdlbnRzLWNvbmZpZyIKc3RvcmUgPSAic3RvcmUiCmxpY2Vuc2UgPSAiTUlUIgp2ZXJzaW9uID0gIjEuMC4wIgoKW3NoYXJlZC5za2lsbHNdCnBhdGggPSAic2hhcmVkL3NraWxscyIKZGVzYyA9ICJBZ2VudCBza2lsbCBkZWZpbml0aW9ucyAoPG5hbWU+L1NLSUxMLm1kKSIKCltzaGFyZWQucnVsZXNdCnBhdGggPSAic2hhcmVkL3J1bGVzIgpkZXNjID0gIlJldXNhYmxlIGluc3RydWN0aW9uL3J1bGUgZmlsZXMgKCoubWQpIgoKW3NoYXJlZC5tZW1vcnldCnBhdGggPSAic2hhcmVkL21lbW9yeSIKZGVzYyA9ICJDcm9zcy1zZXNzaW9uIHBlcnNpc3RlbnQgY29udGV4dCBzdG9yZSIKCltzaGFyZWQucHJvamVjdHNdCnBhdGggPSAic2hhcmVkL3Byb2plY3RzIgpkZXNjID0gIkNyb3NzLWFnZW50IHByb2plY3QgY29udGV4dCBkaXJlY3RvcmllcyIKCltbdG9vbF1dCm5hbWUgPSAib3BlbmNvZGUiCmRlc2MgPSAiT3BlbkNvZGUgQUkgY29kaW5nIGFzc2lzdGFudCIKZXh0ZXJuYWwgPSAifi8uY29uZmlnL29wZW5jb2RlIgpkYXRhID0gIn4vLmxvY2FsL3NoYXJlL29wZW5jb2RlIgpkZXBlbmRlbmNpZXMgPSBbIm9wZW5jb2RlIiwgImJ1biJdCgpbW3Rvb2wuZXh0ZXJuYWxfZGlyXV0KcGF0aCA9ICJ+Ly5sb2NhbC9zaGFyZS9vcGVuY29kZSIKc3RvcmVfcGF0aCA9ICJ1c2VyZGF0YSIKZGVzYyA9ICJPcGVuQ29kZSBzZXNzaW9ucyBkYXRhYmFzZSIKZ2l0aWdub3JlID0gWyIqLmRiLXNobSIsICIqLmRiLXdhbCIsICJsb2cvIiwgInJlcG9zLyIsICJiaW4vIiwgInN0b3JhZ2UvIiwgInRvb2wtb3V0cHV0LyJdCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNraWxscyIKdG8gPSAiLi4vc2hhcmVkL3NraWxscyIKZGVzYyA9ICJTaGFyZWQgc2tpbGxzIgoKW1t0b29sLmludGVybmFsXV0KZnJvbSA9ICJzaGFyZWQtcHJvamVjdHMiCnRvID0gIi4uL3NoYXJlZC9wcm9qZWN0cyIKZGVzYyA9ICJTaGFyZWQgcHJvamVjdCBjb250ZXh0IgoKW1t0b29sLmZpbGVdXQpwYXRoID0gIm9wZW5jb2RlLmpzb24iCmRlc2MgPSAiR2xvYmFsIGNvbmZpZyB3aXRoIG1vZGVsIHJvdXRpbmciCgpbW3Rvb2xdXQpuYW1lID0gImNsYXVkZSIKZGVzYyA9ICJDbGF1ZGUgQ29kZSBDTEkgYnkgQW50aHJvcGljIgpleHRlcm5hbCA9ICJ+Ly5jbGF1ZGUiCmRhdGEgPSAifi8uY2xhdWRlIgpkZXBlbmRlbmNpZXMgPSBbImNsYXVkZSJdCmdpdGlnbm9yZSA9IFsiKi5qc29ubCIsICJzZXNzaW9ucy8iLCAiaWRlLyIsICJzZXNzaW9uLWVudi8iLCAic2hlbGwtc25hcHNob3RzLyIsICJmaWxlLWhpc3RvcnkvIiwgImJhY2t1cHMvIl0KCltbdG9vbC5pbnRlcm5hbF1dCmZyb20gPSAic2tpbGxzIgp0byA9ICIuLi9zaGFyZWQvc2tpbGxzIgpkZXNjID0gIlNoYXJlZCBza2lsbHMiCgpbW3Rvb2wuaW50ZXJuYWxdXQpmcm9tID0gInNoYXJlZC1wcm9qZWN0cyIKdG8gPSAiLi4vc2hhcmVkL3Byb2plY3RzIgpkZXNjID0gIlNoYXJlZCBwcm9qZWN0IGNvbnRleHQiCgpbW3Rvb2wuZmlsZV1dCnBhdGggPSAiQ0xBVURFLm1kIgpkZXNjID0gIkluc3RydWN0aW9ucyBwb2ludGluZyB0byBzaGFyZWQgcmVzb3VyY2VzIgoKW1t0b29sLmV4dGVybmFsX2ZpbGVdXQpwYXRoID0gIn4vLmNsYXVkZS5qc29uIgpkZXNjID0gIkNsYXVkZSBnbG9iYWwgY29uZmlnIGZpbGUiCg=='
 
 # Decode embedded default TOML
 DEFAULT_TOML=$(python3 -c "import base64,sys; sys.stdout.write(base64.b64decode(sys.argv[1]).decode())" "$DEFAULT_TOML_B64" 2>/dev/null || printf "")
@@ -137,6 +137,8 @@ tool_external_dir_path()       { tq ".tool[] | select(.name == \"$1\") | .extern
 tool_external_dir_store_path() { tq ".tool[] | select(.name == \"$1\") | .external_dir[$2].store_path // \"\""; }
 tool_external_dir_desc()       { tq ".tool[] | select(.name == \"$1\") | .external_dir[$2].desc // \"\""; }
 tool_external_dir_gitignore()  { tq ".tool[] | select(.name == \"$1\") | .external_dir[$2].gitignore // [] | .[]"; }
+
+tool_gitignore() { tq ".tool[] | select(.name == \"$1\") | .gitignore // [] | .[]"; }
 
 tool_internals_display() {
   tq ".tool[] | select(.name == \"$1\") | .internal[] | \"\(.from) → \(.to)  [\(.desc // \"\")]\"" 2>/dev/null
@@ -570,6 +572,21 @@ EOF
     check_deps "$t" || true
     ensure_dir "$tool_dir" "$t directory (store/)"
 
+    # Tool-level .gitignore
+    if ! ${DRY_RUN:-false}; then
+      local gi_file="$tool_dir/.gitignore"
+      if [[ ! -f "$gi_file" ]]; then
+        local gi_entries=()
+        while IFS= read -r entry; do
+          [[ -n "$entry" ]] && gi_entries+=("$entry")
+        done < <(tool_gitignore "$t")
+        if [[ ${#gi_entries[@]} -gt 0 ]]; then
+          printf '%s\n' "${gi_entries[@]}" > "$gi_file"
+          info "Created .gitignore for $t"
+        fi
+      fi
+    fi
+
     # Internal symlinks within tool dir
     local int_count
     int_count=$(tool_int_count "$t")
@@ -580,8 +597,7 @@ EOF
         to=$(tool_int_to "$t" "$i")
         idesc=$(tool_int_desc "$t" "$i")
         link_path="$tool_dir/$from"
-        target_path="$STORE_DIR/$to"
-        ensure_symlink "$target_path" "$link_path" "$idesc"
+        ensure_symlink "$to" "$link_path" "$idesc"
       done
     fi
 

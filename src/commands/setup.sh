@@ -99,6 +99,21 @@ EOF
     check_deps "$t" || true
     ensure_dir "$tool_dir" "$t directory (store/)"
 
+    # Tool-level .gitignore
+    if ! ${DRY_RUN:-false}; then
+      local gi_file="$tool_dir/.gitignore"
+      if [[ ! -f "$gi_file" ]]; then
+        local gi_entries=()
+        while IFS= read -r entry; do
+          [[ -n "$entry" ]] && gi_entries+=("$entry")
+        done < <(tool_gitignore "$t")
+        if [[ ${#gi_entries[@]} -gt 0 ]]; then
+          printf '%s\n' "${gi_entries[@]}" > "$gi_file"
+          info "Created .gitignore for $t"
+        fi
+      fi
+    fi
+
     # Internal symlinks within tool dir
     local int_count
     int_count=$(tool_int_count "$t")
@@ -109,8 +124,7 @@ EOF
         to=$(tool_int_to "$t" "$i")
         idesc=$(tool_int_desc "$t" "$i")
         link_path="$tool_dir/$from"
-        target_path="$STORE_DIR/$to"
-        ensure_symlink "$target_path" "$link_path" "$idesc"
+        ensure_symlink "$to" "$link_path" "$idesc"
       done
     fi
 

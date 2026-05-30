@@ -85,6 +85,8 @@ tool_external_dir_store_path() { tq ".tool[] | select(.name == \"$1\") | .extern
 tool_external_dir_desc()       { tq ".tool[] | select(.name == \"$1\") | .external_dir[$2].desc // \"\""; }
 tool_external_dir_gitignore()  { tq ".tool[] | select(.name == \"$1\") | .external_dir[$2].gitignore // [] | .[]"; }
 
+tool_gitignore() { tq ".tool[] | select(.name == \"$1\") | .gitignore // [] | .[]"; }
+
 tool_internals_display() {
   tq ".tool[] | select(.name == \"$1\") | .internal[] | \"\(.from) → \(.to)  [\(.desc // \"\")]\"" 2>/dev/null
 }
