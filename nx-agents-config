@@ -815,9 +815,10 @@ cmd_sync() {
       fi
     fi
 
-    # Push if remote configured
+    # Push if remote configured (fetch first to refresh tracking refs)
     if [[ -n "$remote" ]]; then
-      if run git push -u origin HEAD; then
+      git fetch --quiet origin 2>/dev/null || true
+      if run git push origin HEAD:main; then
         info "Pushed to remote"
       else
         warn "Push failed — check remote connectivity"
