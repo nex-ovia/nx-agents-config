@@ -55,7 +55,7 @@ desc = "Claude Code CLI by Anthropic"
 external = "~/.claude"
 data = "~/.claude"
 dependencies = ["claude"]
-gitignore = ["*.jsonl", "sessions/", "ide/", "session-env/", "shell-snapshots/", "file-history/", "backups/"]
+gitignore = [".credentials.json", ".last-update-result.json", "*.jsonl", "history.jsonl", "cache/", "sessions/", "ide/", "session-env/", "shell-snapshots/", "file-history/", "backups/"]
 
 [[tool.internal]]
 from = "skills"
